@@ -1,0 +1,154 @@
+id,name,calories,proteins,carbs,fats,vitamins,minerals,allergens,unit
+Poulet,165,31,0,3.6,"A,B6,B12","Fer,Zinc,Sélénium","",g
+Riz blanc,130,2.7,28,0.3,"B1,B3","Fer,Magnésium","",g
+Tomate,22,1.1,4.8,0.2,"A,C,K","Potassium","",g
+Oignon,40,1.1,9.3,0.1,"C,B6","Potassium,Manganèse","",g
+Ail,149,6.4,33.1,0.5,"B6,C","Manganèse,Sélénium","",g
+Huile d'olive,884,0,0,100,"E,K","","",ml
+Sel,0,0,0,0,"","Sodium","",g
+Poivre,251,10.4,64,3.3,"K","Manganèse,Fer","",g
+Carotte,41,0.9,9.6,0.2,"A,K","Potassium","",g
+Pomme de terre,77,2,17,0.1,"C,B6","Potassium","",g
+Lait,42,3.4,5,1,"A,D,B12","Calcium,Phosphore","Lactose",ml
+Œuf,155,12.6,1.1,11.3,"A,D,B12","Fer,Sélénium","Œuf",unité
+Farine de blé,364,10,76,1,"B1,B3","Fer,Sélénium","Gluten",g
+Sucre,387,0,100,0,"","","",g
+Beurre,717,0.9,0.1,81,"A,D,E","","Lactose",g
+Pâtes,158,5.8,31,0.9,"B1,B3","Fer,Sélénium","Gluten",g
+Thon,132,28,0,1.2,"D,B12","Sélénium,Phosphore","Poisson",g
+Saumon,208,22,0,13,"D,B12","Sélénium,Phosphore","Poisson",g
+Épinards,23,2.9,3.6,0.4,"A,C,K","Fer,Calcium","",g
+Brocoli,34,2.8,6.6,0.4,"C,K","Calcium,Fer","",g
+Pomme,52,0.3,13.8,0.2,"C","Potassium","",unité
+Banane,89,1.1,22.8,0.3,"B6,C","Potassium,Magnésium","",unité
+Yaourt nature,59,3.5,4.7,3.3,"B2,B12","Calcium,Phosphore","Lactose",g
+Fromage râpé,402,25,1.3,33,"A,B12","Calcium,Phosphore","Lactose",g
+Chocolat noir,545,4.9,61,31,"E","Fer,Magnésium","Lait,Noix",g
+Amandes,579,21.2,21.7,49.9,"E","Calcium,Magnésium","Noix",g
+Miel,304,0.3,82.4,0,"","","",g
+Vinaigre balsamique,88,0.5,17,0,"","","",ml
+Moutarde,66,4.4,5.8,3.3,"","Calcium","",g
+Basilic,23,3.2,2.7,0.6,"A,K","Calcium,Fer","",g
+Thym,101,5.6,24.5,1.7,"A,C","Calcium,Fer","",g
+Bœuf,250,26,0,17,"B12","Fer,Zinc","",g
+Porc,242,27,0,14,"B12","Fer,Zinc","",g
+Agneau,294,25,0,21,"B12","Fer,Zinc","",g
+Crevettes,99,24,0.2,1.7,"B12","Sélénium,Zinc","Crustacés",g
+Moules,86,12,3.7,2.2,"B12","Fer,Sélénium","Mollusques",g
+Champignons,22,3.1,3.3,0.3,"D,B2","Sélénium,Cuivre","",g
+Courgette,17,1.2,3.1,0.3,"C","Potassium","",g
+Aubergine,25,1,6,0.2,"B6","Potassium","",g
+Poivron,31,1,6,0.3,"A,C","Potassium","",g
+Concombre,15,0.7,3.6,0.1,"K","Potassium","",g
+Avocat,160,2,8.5,14.7,"E,K","Potassium","",unité
+Citron,29,1.1,9.3,0.3,"C","Potassium","",unité
+Orange,47,0.9,11.8,0.1,"C","Potassium","",unité
+Fraise,32,0.7,7.7,0.3,"C","Potassium","",g
+Framboise,52,1.2,11.9,0.7,"C","Manganèse","",g
+Myrtille,57,0.7,14.5,0.3,"C,K","Manganèse","",g
+Raisin,69,0.6,18,0.2,"C,K","Potassium","",g
+Kiwi,61,1.1,14.7,0.5,"C,K","Potassium","",unité
+Ananas,50,0.5,13.1,0.1,"C","Manganèse","",g
+Mangue,60,0.8,15,0.4,"A,C","Potassium","",g
+Pêche,39,0.9,9.5,0.3,"A,C","Potassium","",unité
+Abricot,48,1.4,11.1,0.4,"A,C","Potassium","",unité
+Prune,46,0.7,11.4,0.3,"A,K","Potassium","",unité
+Noix,654,15.2,13.7,65.2,"E","Magnésium,Cuivre","Noix",g
+Noisettes,628,15,16.7,60.8,"E","Magnésium,Cuivre","Noix",g
+Pistaches,562,20.2,27.2,45.3,"B6","Magnésium,Cuivre","Noix",g
+Cajou,553,18.2,30.2,43.9,"K","Magnésium,Cuivre","Noix",g
+Pignons de pin,673,14,13.1,68.4,"E","Magnésium,Zinc","Noix",g
+Graines de tournesol,584,20.8,20,51.5,"E","Magnésium,Sélénium","",g
+Graines de courge,559,30.2,10.7,49.1,"E","Magnésium,Zinc","",g
+Graines de chia,486,17,42.1,30.7,"","Calcium,Magnésium","",g
+Graines de lin,534,18.3,28.9,42.2,"","Magnésium,Cuivre","",g
+Quinoa,120,4.4,21.3,1.9,"B","Magnésium,Fer","",g
+Boulgour,83,3.1,17.3,0.2,"B","Magnésium,Fer","",g
+Couscous,112,3.8,23.2,0.2,"B","Magnésium,Fer","",g
+Pois chiches,164,8.9,27.4,2.6,"B","Magnésium,Fer","",g
+Lentilles,116,9,20.1,0.4,"B","Magnésium,Fer","",g
+Haricots rouges,127,8.7,23.7,0.5,"B","Magnésium,Fer","",g
+Haricots blancs,139,9.7,25.1,0.5,"B","Magnésium,Fer","",g
+Pois cassés,118,8.3,21.1,0.4,"B","Magnésium,Fer","",g
+Tofu,76,8,1.9,4.8,"","Calcium,Fer","Soja",g
+Tempeh,192,20.3,7.7,10.8,"","Calcium,Fer","Soja",g
+Seitan,370,75,14,2,"","Fer,Sélénium","Gluten",g
+Levure de bière,105,8.4,11.8,1.2,"B","Magnésium,Zinc","",g
+Miso,199,12.8,25.4,6,"B","Magnésium,Zinc","Soja",g
+Sauce soja,53,8.1,4.9,0.1,"","Magnésium,Zinc","Soja",ml
+Vinaigre de riz,30,0,7,0,"","","",ml
+Sauce piquante,5,0.2,1,0,"","","",ml
+Ketchup,29,0.3,7,0,"","","",ml
+Mayonnaise,680,1,0.6,75,"E","","Œuf",g
+Crème fraîche,340,2.1,2.8,36,"A","Calcium","Lactose",g
+Crème liquide,340,2.1,2.8,36,"A","Calcium","Lactose",ml
+Lait de coco,230,2.3,5.5,24,"","Magnésium","",ml
+Lait d'amande,13,0.4,0.3,1.1,"E","Calcium","Noix",ml
+Lait de soja,33,2.9,1.8,1.9,"","Calcium","Soja",ml
+Lait d'avoine,43,1,8,0.5,"","Calcium","",ml
+Sirop d'érable,260,0,67,0,"","","",ml
+Sucre roux,380,0,98,0,"","","",g
+Sucre de canne,387,0,100,0,"","","",g
+Miel de lavande,304,0.3,82.4,0,"","","",g
+Miel de thym,304,0.3,82.4,0,"","","",g
+Confiture,278,0.3,69,0.1,"","","",g
+Gelée,278,0.3,69,0.1,"","","",g
+Marmelade,278,0.3,69,0.1,"","","",g
+Pâte à tartiner,545,4.9,61,31,"E","Fer,Magnésium","Noix",g
+Nutella,539,6,56,31,"E","Fer,Magnésium","Noix,Lait",g
+Pâte d'amande,607,21.2,21.7,49.9,"E","Calcium,Magnésium","Noix",g
+Pâte de noisettes,628,15,16.7,60.8,"E","Magnésium,Cuivre","Noix",g
+Pâte de sésame,595,17,23.4,50.9,"E","Calcium,Fer","Sésame",g
+Tahini,595,17,23.4,50.9,"E","Calcium,Fer","Sésame",g
+Hummus,166,7.9,14.3,9.6,"","Calcium,Fer","Sésame",g
+Guacamole,160,2,8.5,14.7,"E,K","Potassium","",g
+Tzatziki,59,3.5,4.7,3.3,"B2,B12","Calcium,Phosphore","Lactose",g
+Tarama,340,7,2,34,"","","Œuf",g
+Rillettes de thon,132,28,0,1.2,"D,B12","Sélénium,Phosphore","Poisson",g
+Rillettes de saumon,208,22,0,13,"D,B12","Sélénium,Phosphore","Poisson",g
+Terrine de campagne,340,15,2,30,"","","",g
+Pâté de foie,319,11,2,30,"A","Fer","",g
+Foie gras,462,11,4,45,"A","Fer","",g
+Jambon cru,271,28,0,18,"B12","Fer,Zinc","",g
+Jambon cuit,145,22,1,7,"B12","Fer,Zinc","",g
+Saucisson,290,25,0,21,"B12","Fer,Zinc","",g
+Salami,336,22,0,27,"B12","Fer,Zinc","",g
+Chorizo,455,24,0,38,"B12","Fer,Zinc","",g
+Bacon,541,37,1.4,42,"B12","Fer,Zinc","",g
+Lardons,541,37,1.4,42,"B12","Fer,Zinc","",g
+Saucisse de Toulouse,290,25,0,21,"B12","Fer,Zinc","",g
+Merguez,290,25,0,21,"B12","Fer,Zinc","",g
+Chipolata,290,25,0,21,"B12","Fer,Zinc","",g
+Boudin noir,290,25,0,21,"B12","Fer,Zinc","",g
+Andouille,290,25,0,21,"B12","Fer,Zinc","",g
+Andouillette,290,25,0,21,"B12","Fer,Zinc","",g
+Tripes,290,25,0,21,"B12","Fer,Zinc","",g
+Tête de veau,290,25,0,21,"B12","Fer,Zinc","",g
+Cervelas,290,25,0,21,"B12","Fer,Zinc","",g
+Knacki,290,25,0,21,"B12","Fer,Zinc","",g
+Hot-dog,290,25,0,21,"B12","Fer,Zinc","",g
+Hamburger,290,25,0,21,"B12","Fer,Zinc","",g
+Steak haché,250,26,0,17,"B12","Fer,Zinc","",g
+Escalope de poulet,165,31,0,3.6,"A,B6,B12","Fer,Zinc,Sélénium","",g
+Escalope de dinde,157,30,0,3.6,"A,B6,B12","Fer,Zinc,Sélénium","",g
+Escalope de veau,172,31,0,5.7,"B12","Fer,Zinc","",g
+Côte de bœuf,250,26,0,17,"B12","Fer,Zinc","",g
+Côte de porc,242,27,0,14,"B12","Fer,Zinc","",g
+Côtelette d'agneau,294,25,0,21,"B12","Fer,Zinc","",g
+Entrecôte,250,26,0,17,"B12","Fer,Zinc","",g
+Filet mignon,242,27,0,14,"B12","Fer,Zinc","",g
+Rôti de bœuf,250,26,0,17,"B12","Fer,Zinc","",g
+Rôti de porc,242,27,0,14,"B12","Fer,Zinc","",g
+Rôti de veau,172,31,0,5.7,"B12","Fer,Zinc","",g
+Gigot d'agneau,294,25,0,21,"B12","Fer,Zinc","",g
+Carré d'agneau,294,25,0,21,"B12","Fer,Zinc","",g
+Côte de bœuf,250,26,0,17,"B12","Fer,Zinc","",g
+Côte de porc,242,27,0,14,"B12","Fer,Zinc","",g
+Côtelette d'agneau,294,25,0,21,"B12","Fer,Zinc","",g
+Entrecôte,250,26,0,17,"B12","Fer,Zinc","",g
+Filet mignon,242,27,0,14,"B12","Fer,Zinc","",g
+Rôti de bœuf,250,26,0,17,"B12","Fer,Zinc","",g
+Rôti de porc,242,27,0,14,"B12","Fer,Zinc","",g
+Rôti de veau,172,31,0,5.7,"B12","Fer,Zinc","",g
+Gigot d'agneau,294,25,0,21,"B12","Fer,Zinc","",g
+Carré d'agneau,294,25,0,21,"B12","Fer,Zinc","",g 

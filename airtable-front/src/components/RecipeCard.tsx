@@ -1,0 +1,202 @@
+'use client';
+
+import React, { useState } from 'react';
+import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
+import { XMarkIcon, HeartIcon, ClockIcon, UserGroupIcon, FireIcon } from '@heroicons/react/24/outline';
+import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
+import { Recipe } from '@/types/recipe';
+
+interface RecipeCardProps {
+  recipe: Recipe;
+}
+
+const PLACEHOLDER_IMAGES = [
+  'https://placehold.co/400x300/FF5733/FFFFFF/png?text=Recette+1',
+  'https://placehold.co/400x300/33FF57/FFFFFF/png?text=Recette+2',
+  'https://placehold.co/400x300/3357FF/FFFFFF/png?text=Recette+3',
+];
+
+export function RecipeCard({ recipe }: RecipeCardProps) {
+  const [open, setOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % PLACEHOLDER_IMAGES.length);
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex((prev) => (prev - 1 + PLACEHOLDER_IMAGES.length) % PLACEHOLDER_IMAGES.length);
+  };
+
+  return (
+    <>
+      <div
+        onClick={() => setOpen(true)}
+        className="bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+      >
+        <div className="relative">
+          <img
+            src={PLACEHOLDER_IMAGES[0]}
+            alt={recipe.name}
+            className="w-full h-48 object-cover"
+          />
+          <div className="absolute top-2 right-2 bg-white/90 rounded-full p-1">
+            <HeartIcon className="h-6 w-6 text-red-500" />
+          </div>
+        </div>
+        <div className="p-4">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="font-bold text-xl text-gray-900">{recipe.name}</h3>
+            <span className="px-2 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm font-medium">
+              {recipe.category}
+            </span>
+          </div>
+          <p className="text-gray-600 text-sm line-clamp-2 mb-3">{recipe.description}</p>
+          <div className="flex items-center justify-between text-sm text-gray-500">
+            <div className="flex items-center space-x-2">
+              <ClockIcon className="h-4 w-4" />
+              <span>{recipe.preparationTime} min</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <FireIcon className="h-4 w-4" />
+              <span>{recipe.difficulty}</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <UserGroupIcon className="h-4 w-4" />
+              <span>{recipe.servings} pers.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <Dialog open={open} onClose={setOpen} className="relative z-50">
+        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+
+        <div className="fixed inset-0 overflow-hidden">
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
+              <DialogPanel className="pointer-events-auto w-screen max-w-2xl">
+                <div className="flex h-full flex-col overflow-y-scroll bg-white shadow-xl">
+                  {/* Header */}
+                  <div className="px-4 py-6 sm:px-6">
+                    <div className="flex items-start justify-between">
+                      <DialogTitle className="text-2xl font-semibold text-gray-900">
+                        {recipe.name}
+                      </DialogTitle>
+                      <button
+                        type="button"
+                        onClick={() => setOpen(false)}
+                        className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none"
+                      >
+                        <span className="sr-only">Fermer</span>
+                        <XMarkIcon className="h-6 w-6" aria-hidden="true" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="relative flex-1 px-4 sm:px-6">
+                    {/* Image Carousel */}
+                    <div className="relative aspect-w-16 aspect-h-9 mb-6 rounded-xl overflow-hidden">
+                      <img
+                        src={PLACEHOLDER_IMAGES[currentImageIndex]}
+                        alt={recipe.name}
+                        className="w-full h-80 object-cover"
+                      />
+                      <button
+                        onClick={(e) => { e.stopPropagation(); prevImage(); }}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-2 hover:bg-white"
+                      >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); nextImage(); }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-2 hover:bg-white"
+                      >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </div>
+
+                    {/* Recipe Info */}
+                    <div className="grid grid-cols-3 gap-4 mb-6 bg-gray-50 p-4 rounded-xl">
+                      <div className="flex items-center space-x-2">
+                        <ClockIcon className="h-5 w-5 text-indigo-500" />
+                        <span className="text-sm text-gray-600">
+                          {recipe.preparationTime + recipe.cookingTime} min
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <UserGroupIcon className="h-5 w-5 text-indigo-500" />
+                        <span className="text-sm text-gray-600">
+                          {recipe.servings} pers.
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <HeartIcon className="h-5 w-5 text-indigo-500" />
+                        <span className="text-sm text-gray-600">
+                          {recipe.likes} likes
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Description */}
+                    <div className="mb-6 bg-white p-4 rounded-xl shadow-sm">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">Description</h3>
+                      <p className="text-gray-600">{recipe.description}</p>
+                    </div>
+
+                    {/* Ingredients */}
+                    <div className="mb-6 bg-white p-4 rounded-xl shadow-sm">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">Ingrédients</h3>
+                      <ul className="grid grid-cols-2 gap-2">
+                        {recipe.ingredients.map((ingredient, index) => (
+                          <li key={index} className="flex items-center space-x-2 text-gray-600">
+                            <span className="w-2 h-2 bg-indigo-500 rounded-full"></span>
+                            <span>{ingredient.name}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Instructions */}
+                    <div className="mb-6 bg-white p-4 rounded-xl shadow-sm">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">Instructions</h3>
+                      <ol className="space-y-4">
+                        {recipe.instructions.map((instruction, index) => (
+                          <li key={index} className="flex space-x-3">
+                            <span className="flex-shrink-0 w-6 h-6 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-medium">
+                              {index + 1}
+                            </span>
+                            <span className="text-gray-600">{instruction}</span>
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+
+                    {/* Additional Info */}
+                    <div className="border-t border-gray-200 pt-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <span className="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm font-medium">
+                            {recipe.difficulty}
+                          </span>
+                          <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                            {recipe.category}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </DialogPanel>
+            </div>
+          </div>
+        </div>
+      </Dialog>
+    </>
+  );
+} 

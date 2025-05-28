@@ -1,0 +1,5 @@
+id,username,email,password,allergies,createdAt,updatedAt
+1,admin,admin@example.com,$2b$10$X7UrH5YxX5X5X5X5X5X5Xe,2024-03-20T00:00:00Z,2024-03-20T00:00:00Z
+2,user1,user1@example.com,$2b$10$X7UrH5YxX5X5X5X5X5X5Xe,"Lactose,Gluten",2024-03-20T00:00:00Z,2024-03-20T00:00:00Z
+3,user2,user2@example.com,$2b$10$X7UrH5YxX5X5X5X5X5X5Xe,"Œuf,Poisson",2024-03-20T00:00:00Z,2024-03-20T00:00:00Z
+4,chef,chef@example.com,$2b$10$X7UrH5YxX5X5X5X5X5X5Xe,,2024-03-20T00:00:00Z,2024-03-20T00:00:00Z 
