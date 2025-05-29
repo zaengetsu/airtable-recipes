@@ -1,6 +1,6 @@
+import { Groq } from 'groq-sdk';
 import { AirtableIngredient } from '../types/airtable.types';
 
-const GROQ_API_KEY = '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';
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 interface NutritionalAnalysis {
@@ -29,7 +29,83 @@ interface GeneratedRecipe {
   category: string;
 }
 
-export const groqService = {
+export class GroqService {
+  private client: Groq;
+  private systemPrompt = `Tu es un assistant culinaire expert. Ton rôle est d'aider les utilisateurs à créer des recettes en fonction de leurs ingrédients et préférences.
+Si l'utilisateur mentionne des ingrédients, pose des questions pour obtenir plus de détails (variété, quantité, etc.).
+Quand tu proposes une recette, structure-la clairement avec :
+- Un titre
+- Une liste d'ingrédients avec quantités
+- Des instructions étape par étape
+- Des informations nutritionnelles si possible
+
+Format de réponse pour une recette :
+{
+  "containsRecipe": true,
+  "recipeData": {
+    "title": "Titre de la recette",
+    "ingredients": ["ingrédient 1", "ingrédient 2"],
+    "instructions": ["étape 1", "étape 2"],
+    "nutritionalInfo": {
+      "calories": 0,
+      "proteins": 0,
+      "carbs": 0,
+      "fats": 0
+    }
+  }
+}
+
+Si tu n'as pas assez d'informations, pose des questions pour en obtenir plus.`;
+
+  constructor() {
+    this.client = new Groq({
+      apiKey: process.env.GROQ_API_KEY
+    });
+  }
+
+  async chat(message: string, conversationHistory: any[] = []): Promise<any> {
+    try {
+      const messages = [
+        { role: 'system', content: this.systemPrompt },
+        ...conversationHistory,
+        { role: 'user', content: message }
+      ];
+
+      const completion = await this.client.chat.completions.create({
+        messages,
+        model: 'llama3-70b-8192',
+        temperature: 0.7,
+        max_tokens: 1024,
+      });
+
+      const response = completion.choices[0].message.content;
+      
+      try {
+        // Essayer de parser la réponse comme JSON si c'est une recette
+        if (typeof response === 'string') {
+          const parsedResponse = JSON.parse(response);
+          if (parsedResponse.containsRecipe) {
+            return parsedResponse;
+          }
+        }
+      } catch {
+        // Si ce n'est pas du JSON, c'est une réponse normale
+        return {
+          containsRecipe: false,
+          message: response
+        };
+      }
+
+      return {
+        containsRecipe: false,
+        message: response
+      };
+    } catch (error) {
+      console.error('Error in Groq chat:', error);
+      throw error;
+    }
+  }
+
   async analyzeNutrition(ingredients: AirtableIngredient[]): Promise<NutritionalAnalysis> {
     const prompt = `Analysez les valeurs nutritionnelles suivantes et fournissez une analyse détaillée au format JSON:
     ${JSON.stringify(ingredients, null, 2)}
@@ -49,10 +125,10 @@ export const groqService = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${GROQ_API_KEY}`
+        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'mixtral-8x7b-32768',
+        model: 'llama3-70b-8192',
         messages: [
           {
             role: 'system',
@@ -74,7 +150,7 @@ export const groqService = {
 
     const data = await response.json();
     return JSON.parse(data.choices[0].message.content);
-  },
+  }
 
   async generateRecipe(ingredients: AirtableIngredient[]): Promise<GeneratedRecipe> {
     const prompt = `En tant que chef cuisinier professionnel, créez une recette détaillée et savoureuse en utilisant les ingrédients suivants:
@@ -110,10 +186,10 @@ export const groqService = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${GROQ_API_KEY}`
+        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'mixtral-8x7b-32768',
+        model: 'llama3-70b-8192',
         messages: [
           {
             role: 'system',
@@ -136,4 +212,4 @@ export const groqService = {
     const data = await response.json();
     return JSON.parse(data.choices[0].message.content);
   }
-}; 
+} 

@@ -493,5 +493,22 @@ export const airtableService = {
       console.error('Erreur lors de la récupération des recettes par difficulté:', error);
       throw error;
     }
+  },
+
+  async getNutritionalAnalysis(recipeId: string) {
+    const record = await base('Recipes').find(recipeId);
+    return record?.fields.nutritionalAnalysis || null;
+  },
+
+  async createNutritionalAnalysis(data: any) {
+    return await base('Recipes').create(data);
+  },
+
+  async updateNutritionalAnalysis(id: string, data: any) {
+    return await base('Recipes').update(id, data);
+  },
+
+  async deleteNutritionalAnalysis(id: string) {
+    return await base('Recipes').destroy(id);
   }
 }; 
