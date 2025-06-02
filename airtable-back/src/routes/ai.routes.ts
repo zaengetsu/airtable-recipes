@@ -99,11 +99,14 @@ router.post('/chat', authenticate, async (req, res) => {
     // Si la réponse contient une recette, extraire les informations
     if (response.containsRecipe) {
       const recipeData = response.recipeData;
-      // Retourner la réponse avec les données de la recette
+      // Formater la recette pour l'utilisateur
+      const formattedMessage = `**${recipeData.name}**\n\n${recipeData.description}\n\n**Ingrédients :**\n${recipeData.ingredients.map((ing: any) => `- ${ing.quantity} ${ing.unit} ${ing.name}`.trim()).join('\n')}\n\n**Instructions :**\n${recipeData.instructions.map((step: string, i: number) => `${i + 1}. ${step}`).join('\n')}\n\n**Portions** : ${recipeData.servings}\n**Préparation** : ${recipeData.preparationTime} min\n**Cuisson** : ${recipeData.cookingTime} min\n**Difficulté** : ${recipeData.difficulty}\n**Catégorie** : ${recipeData.category}`;
+      // Retourner la réponse formatée + les données pour le bouton
       return res.json({
-        message: response.message,
-        recipes: [recipeData],
-        containsRecipe: true
+        message: formattedMessage,
+        containsRecipe: true,
+        canCreateRecipe: response.canCreateRecipe || false,
+        recipeData: recipeData
       });
     }
     // Sinon, retourner juste la réponse du chat

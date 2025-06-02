@@ -31,8 +31,8 @@ interface GeneratedRecipe {
 
 export class GroqService {
   private client: Groq;
-  private systemPrompt = `Tu es un assistant culinaire expert. Ton rôle est d'aider les utilisateurs à créer des recettes en fonction de leurs ingrédients et préférences.
-Si l'utilisateur mentionne des ingrédients, pose des questions pour obtenir plus de détails (variété, quantité, etc.).
+  private systemPrompt = `Tu es un assistant culinaire expert. Ton rôle est d'aider les utilisateurs à créer des recettes à partir de leurs ingrédients et préférences, sans poser trop de questions. Si les informations sont suffisantes, propose directement une recette complète et structurée.
+
 Quand tu proposes une recette, structure-la clairement avec :
 - Un titre
 - Une liste d'ingrédients avec quantités
@@ -42,20 +42,24 @@ Quand tu proposes une recette, structure-la clairement avec :
 Format de réponse pour une recette :
 {
   "containsRecipe": true,
+  "canCreateRecipe": true, // ce champ doit être à true si la recette est complète et peut être créée
   "recipeData": {
-    "title": "Titre de la recette",
-    "ingredients": ["ingrédient 1", "ingrédient 2"],
+    "name": "Titre de la recette",
+    "description": "Description appétissante",
+    "ingredients": [
+      { "name": "ingrédient 1", "quantity": "100", "unit": "g" },
+      { "name": "ingrédient 2", "quantity": "2", "unit": "pièce" }
+    ],
     "instructions": ["étape 1", "étape 2"],
-    "nutritionalInfo": {
-      "calories": 0,
-      "proteins": 0,
-      "carbs": 0,
-      "fats": 0
-    }
+    "servings": 2,
+    "preparationTime": 10,
+    "cookingTime": 20,
+    "difficulty": "Facile",
+    "category": "Plat principal"
   }
 }
 
-Si tu n'as pas assez d'informations, pose des questions pour en obtenir plus.`;
+Si tu n'as pas assez d'informations, propose la recette la plus plausible possible sans insister pour obtenir plus de détails.`;
 
   constructor() {
     this.client = new Groq({
@@ -65,40 +69,54 @@ Si tu n'as pas assez d'informations, pose des questions pour en obtenir plus.`;
 
   async chat(message: string, conversationHistory: any[] = []): Promise<any> {
     try {
-      const messages = [
+      // Premier appel : texte utilisateur
+      const userPrompt = `Donne-moi une recette de ${message}, formatée pour un utilisateur, sans JSON, sans balises, juste le texte.`;
+      const messagesText = [
         { role: 'system', content: this.systemPrompt },
         ...conversationHistory,
-        { role: 'user', content: message }
+        { role: 'user', content: userPrompt }
       ];
-
-      const completion = await this.client.chat.completions.create({
-        messages,
+      const completionText = await this.client.chat.completions.create({
+        messages: messagesText,
         model: 'llama3-70b-8192',
         temperature: 0.7,
         max_tokens: 1024,
       });
+      const userMessage = completionText.choices[0].message.content;
 
-      const response = completion.choices[0].message.content;
-      
+      // Deuxième appel : JSON structuré
+      const jsonPrompt = `Pour la même recette, donne-moi uniquement le JSON au format suivant (pas de texte, pas de commentaire, pas de balises) :\n{\n  \"name\": ... ,\n  \"description\": ... ,\n  \"ingredients\": [...],\n  \"instructions\": [...],\n  \"servings\": ... ,\n  \"preparationTime\": ... ,\n  \"cookingTime\": ... ,\n  \"difficulty\": ... ,\n  \"category\": ...\n}`;
+      const messagesJson = [
+        { role: 'system', content: this.systemPrompt },
+        ...conversationHistory,
+        { role: 'user', content: userPrompt },
+        { role: 'assistant', content: userMessage },
+        { role: 'user', content: jsonPrompt }
+      ];
+      const completionJson = await this.client.chat.completions.create({
+        messages: messagesJson,
+        model: 'llama3-70b-8192',
+        temperature: 0.3,
+        max_tokens: 1024,
+      });
+      let recipeData = null;
+      let canCreateRecipe = false;
       try {
-        // Essayer de parser la réponse comme JSON si c'est une recette
-        if (typeof response === 'string') {
-          const parsedResponse = JSON.parse(response);
-          if (parsedResponse.containsRecipe) {
-            return parsedResponse;
-          }
+        const jsonContent = completionJson.choices[0].message.content;
+        if (typeof jsonContent === 'string') {
+          recipeData = JSON.parse(jsonContent);
+          canCreateRecipe = !!recipeData && !!recipeData.name && !!recipeData.ingredients && !!recipeData.instructions;
         }
       } catch {
-        // Si ce n'est pas du JSON, c'est une réponse normale
-        return {
-          containsRecipe: false,
-          message: response
-        };
+        recipeData = null;
+        canCreateRecipe = false;
       }
 
       return {
-        containsRecipe: false,
-        message: response
+        message: userMessage,
+        containsRecipe: !!recipeData,
+        canCreateRecipe,
+        recipeData
       };
     } catch (error) {
       console.error('Error in Groq chat:', error);
