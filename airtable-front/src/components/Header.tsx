@@ -20,6 +20,7 @@ import {
   FingerPrintIcon,
   SquaresPlusIcon,
   XMarkIcon,
+  UserCircleIcon,
 } from '@heroicons/react/24/outline';
 import { ChevronDownIcon, PhoneIcon, PlayCircleIcon } from '@heroicons/react/20/solid';
 import Link from 'next/link';
@@ -88,9 +89,7 @@ export default function Header() {
                     key={item.name}
                     className="group relative flex items-center gap-x-6 rounded-lg p-4 text-sm leading-6 hover:bg-gray-50"
                   >
-                    <div className="flex h-11 w-11 flex-none items-center justify-center rounded-lg bg-gray-50 group-hover:bg-white">
-                      <item.icon className="h-6 w-6 text-gray-600 group-hover:text-indigo-600" aria-hidden="true" />
-                    </div>
+                    {/* Icône supprimée */}
                     <div className="flex-auto">
                       <Link href={item.href} className="block font-semibold text-gray-900">
                         {item.name}
@@ -101,18 +100,7 @@ export default function Header() {
                   </div>
                 ))}
               </div>
-              <div className="grid grid-cols-2 divide-x divide-gray-900/5 bg-gray-50">
-                {callsToAction.map((item) => (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className="flex items-center justify-center gap-x-2.5 p-3 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-100"
-                  >
-                    <item.icon className="h-5 w-5 flex-none text-gray-400" aria-hidden="true" />
-                    {item.name}
-                  </Link>
-                ))}
-              </div>
+              {/* Section boutons supprimée */}
             </PopoverPanel>
           </Popover>
           <Link href="/profile" className="text-sm font-semibold leading-6 text-gray-900">
@@ -121,16 +109,47 @@ export default function Header() {
         </PopoverGroup>
         <div className="hidden lg:flex lg:flex-1 lg:justify-end">
           {user ? (
-            <button
-              onClick={() => { logout(); router.refresh(); }}
-              className="text-sm font-semibold leading-6 text-gray-900   "
-            >
-              Déconnexion <span aria-hidden="true">&rarr;</span>
-            </button>
+            <Popover className="relative">
+              <PopoverButton className="flex items-center gap-x-1 text-sm font-semibold leading-6 text-gray-900 hover:text-gray-800">
+                <UserCircleIcon className="h-6 w-6" aria-hidden="true" />
+                <span className="hidden sm:block">{user.email}</span>
+                <ChevronDownIcon className="h-5 w-5 flex-none text-gray-400" aria-hidden="true" />
+              </PopoverButton>
+              <PopoverPanel className="absolute right-0 top-full z-10 mt-3 w-48 overflow-hidden rounded-3xl bg-white shadow-lg ring-1 ring-gray-900/5">
+                <div className="p-2">
+                  <Link
+                    href="/profile"
+                    className="block rounded-lg px-3 py-2 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-100"
+                  >
+                    Mon profil
+                  </Link>
+                  <Link
+                    href="/recipes/new"
+                    className="block rounded-lg px-3 py-2 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-100"
+                  >
+                    Créer une recette
+                  </Link>
+                  <button
+                    onClick={() => { logout(); router.refresh(); }}
+                    className="block w-full rounded-lg px-3 py-2 text-left text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-100"
+                  >
+                    Déconnexion
+                  </button>
+                </div>
+              </PopoverPanel>
+            </Popover>
           ) : (
-            <Link href="/login" className="text-sm font-semibold leading-6 text-gray-900">
-              Connexion <span aria-hidden="true">&rarr;</span>
-            </Link>
+            <div className="flex items-center gap-x-4">
+              <Link href="/login" className="text-sm font-semibold leading-6 text-gray-900 hover:text-gray-800">
+                Connexion
+              </Link>
+              <Link 
+                href="/register" 
+                className="rounded-md bg-black px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-800"
+              >
+                Inscription
+              </Link>
+            </div>
           )}
         </div>
       </nav>
@@ -185,23 +204,48 @@ export default function Header() {
               </div>
               <div className="py-6">
                 {user ? (
-                  <button
-                    onClick={() => {
-                      logout();
-                      setMobileMenuOpen(false);
-                      router.refresh();
-                    }}
-                    className="-mx-3 block rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
-                  >
-                    Déconnexion
-                  </button>
+                  <div className="space-y-2">
+                    <div className="px-3 py-2 text-sm text-gray-500">
+                      Connecté en tant que {user.email}
+                    </div>
+                    <Link
+                      href="/profile"
+                      className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
+                    >
+                      Mon profil
+                    </Link>
+                    <Link
+                      href="/recipes/new"
+                      className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
+                    >
+                      Créer une recette
+                    </Link>
+                    <button
+                      onClick={() => {
+                        logout();
+                        setMobileMenuOpen(false);
+                        router.refresh();
+                      }}
+                      className="-mx-3 block w-full rounded-lg px-3 py-2.5 text-left text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
+                    >
+                      Déconnexion
+                    </button>
+                  </div>
                 ) : (
-                  <Link
-                    href="/login"
-                    className="-mx-3 block rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
-                  >
-                    Connexion
-                  </Link>
+                  <div className="space-y-2">
+                    <Link
+                      href="/login"
+                      className="-mx-3 block rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
+                    >
+                      Connexion
+                    </Link>
+                    <Link
+                      href="/register"
+                      className="-mx-3 block rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
+                    >
+                      Inscription
+                    </Link>
+                  </div>
                 )}
               </div>
             </div>
