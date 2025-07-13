@@ -8,6 +8,10 @@ import { Recipe } from '@/types/recipe';
 
 interface RecipeCardProps {
   recipe: Recipe;
+  onAnalyze?: (recipe: Recipe) => void;
+  open?: boolean;
+  onOpenDetails?: () => void;
+  onCloseDetails?: () => void;
 }
 
 const PLACEHOLDER_IMAGES = [
@@ -16,8 +20,43 @@ const PLACEHOLDER_IMAGES = [
   'https://placehold.co/400x300/3357FF/FFFFFF/png?text=Recette+3',
 ];
 
-export function RecipeCard({ recipe }: RecipeCardProps) {
-  const [open, setOpen] = useState(false);
+// Fonction pour obtenir les couleurs selon la catégorie
+const getCategoryColors = (category: string) => {
+  const categoryLower = category.toLowerCase();
+  
+  if (categoryLower.includes('plat') || categoryLower.includes('principal')) {
+    return 'bg-orange-100 text-orange-800';
+  }
+  if (categoryLower.includes('dessert') || categoryLower.includes('sucré')) {
+    return 'bg-pink-100 text-pink-800';
+  }
+  if (categoryLower.includes('entrée') || categoryLower.includes('apéritif')) {
+    return 'bg-green-100 text-green-800';
+  }
+  if (categoryLower.includes('boisson') || categoryLower.includes('cocktail')) {
+    return 'bg-blue-100 text-blue-800';
+  }
+  if (categoryLower.includes('salade') || categoryLower.includes('légume')) {
+    return 'bg-emerald-100 text-emerald-800';
+  }
+  if (categoryLower.includes('soupe') || categoryLower.includes('potage')) {
+    return 'bg-amber-100 text-amber-800';
+  }
+  if (categoryLower.includes('pizza') || categoryLower.includes('burger')) {
+    return 'bg-red-100 text-red-800';
+  }
+  if (categoryLower.includes('pasta') || categoryLower.includes('pâtes')) {
+    return 'bg-yellow-100 text-yellow-800';
+  }
+  
+  // Couleur par défaut
+  return 'bg-gray-100 text-gray-800';
+};
+
+export function RecipeCard({ recipe, onAnalyze, open, onOpenDetails, onCloseDetails }: RecipeCardProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isOpen = open !== undefined ? open : internalOpen;
+
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const nextImage = () => {
@@ -28,10 +67,21 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
     setCurrentImageIndex((prev) => (prev - 1 + PLACEHOLDER_IMAGES.length) % PLACEHOLDER_IMAGES.length);
   };
 
+  const handleOpen = () => {
+    if (onOpenDetails) onOpenDetails();
+    else setInternalOpen(true);
+  };
+  const handleClose = () => {
+    if (onCloseDetails) onCloseDetails();
+    else setInternalOpen(false);
+  };
+
+  const categoryColors = getCategoryColors(recipe.category);
+
   return (
     <>
       <div
-        onClick={() => setOpen(true)}
+        onClick={handleOpen}
         className="bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
       >
         <div className="relative">
@@ -47,12 +97,12 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
         <div className="p-4">
           <div className="flex items-center justify-between mb-2">
             <h3 className="font-bold text-xl text-gray-900">{recipe.name}</h3>
-            <span className="px-2 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm font-medium">
+            <span className={`px-2 py-1 rounded-full text-sm font-medium ${categoryColors}`}>
               {recipe.category}
             </span>
           </div>
           <p className="text-gray-600 text-sm line-clamp-2 mb-3">{recipe.description}</p>
-          <div className="flex items-center justify-between text-sm text-gray-500">
+          <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
             <div className="flex items-center space-x-2">
               <ClockIcon className="h-4 w-4" />
               <span>{recipe.preparationTime} min</span>
@@ -66,36 +116,52 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
               <span>{recipe.servings} pers.</span>
             </div>
           </div>
+          {onAnalyze && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onAnalyze?.(recipe); }}
+              className="w-full mt-2 rounded-md bg-black px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 transition-colors"
+            >
+              Analyse nutritionnelle
+            </button>
+          )}
         </div>
       </div>
 
-      <Dialog open={open} onClose={setOpen} className="relative z-50">
+      <Dialog open={isOpen} onClose={handleClose} className="relative z-50">
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
 
         <div className="fixed inset-0 overflow-hidden">
           <div className="absolute inset-0 overflow-hidden">
             <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
-              <DialogPanel className="pointer-events-auto w-screen max-w-2xl">
-                <div className="flex h-full flex-col overflow-y-scroll bg-white shadow-xl">
+              <DialogPanel className="pointer-events-auto w-screen max-w-2xl bg-gradient-to-br from-white via-gray-50 to-gray-200 shadow-2xl rounded-l-3xl border-l border-gray-200">
+                <div className="flex h-full flex-col overflow-y-scroll">
                   {/* Header */}
-                  <div className="px-4 py-6 sm:px-6">
-                    <div className="flex items-start justify-between">
-                      <DialogTitle className="text-2xl font-semibold text-gray-900">
-                        {recipe.name}
-                      </DialogTitle>
+                  <div className="p-6 border-b flex items-center justify-between bg-gradient-to-r from-gray-100 via-white to-gray-50 rounded-tl-3xl">
+                    <DialogTitle className="text-2xl font-bold tracking-tight text-gray-900">
+                      {recipe.name}
+                    </DialogTitle>
+                    <button
+                      type="button"
+                      onClick={handleClose}
+                      className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none shadow"
+                    >
+                      <span className="sr-only">Fermer</span>
+                      <XMarkIcon className="h-6 w-6" aria-hidden="true" />
+                    </button>
+                  </div>
+                  {/* Bouton Analyse nutritionnelle en haut */}
+                  {onAnalyze && false && (
+                    <div className="px-6 pt-4">
                       <button
-                        type="button"
-                        onClick={() => setOpen(false)}
-                        className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none"
+                        onClick={() => { onAnalyze?.(recipe); window.location.hash = `details?recipeId=${recipe.id}`; }}
+                        className="w-full rounded-md bg-black px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 transition-colors"
                       >
-                        <span className="sr-only">Fermer</span>
-                        <XMarkIcon className="h-6 w-6" aria-hidden="true" />
+                        Analyse nutritionnelle
                       </button>
                     </div>
-                  </div>
-
+                  )}
                   {/* Content */}
-                  <div className="relative flex-1 px-4 sm:px-6">
+                  <div className="relative flex-1 px-6 sm:px-8 pb-8">
                     {/* Image Carousel */}
                     <div className="relative aspect-w-16 aspect-h-9 mb-6 rounded-xl overflow-hidden">
                       <img
@@ -142,6 +208,17 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
                         </span>
                       </div>
                     </div>
+                    {/* Bouton Analyse nutritionnelle juste en dessous */}
+                    {onAnalyze && (
+                      <div className="mb-6">
+                        <button
+                          onClick={() => { onAnalyze?.(recipe); window.location.hash = `details?recipeId=${recipe.id}`; }}
+                          className="w-full rounded-md bg-black px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 transition-colors"
+                        >
+                          Analyse nutritionnelle
+                        </button>
+                      </div>
+                    )}
 
                     {/* Description */}
                     <div className="mb-6 bg-white p-4 rounded-xl shadow-sm">
@@ -184,7 +261,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
                           <span className="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm font-medium">
                             {recipe.difficulty}
                           </span>
-                          <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${categoryColors}`}>
                             {recipe.category}
                           </span>
                         </div>

@@ -37,6 +37,8 @@ export default function Home() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [recipeToAnalyze, setRecipeToAnalyze] = useState<Recipe | null>(null);
+  const [openedRecipeId, setOpenedRecipeId] = useState<string | null>(null);
 
   React.useEffect(() => {
     const fetchRecipes = async () => {
@@ -56,6 +58,36 @@ export default function Home() {
 
     fetchRecipes();
   }, []);
+
+  // Ouvre le drawer si l'URL contient #details?recipeId=...
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash;
+      if (hash.startsWith('#details?recipeId=')) {
+        const recipeId = hash.split('=')[1];
+        const found = recipes.find(r => r.id === recipeId);
+        if (found) {
+          setRecipeToAnalyze(found);
+          setIsChatOpen(true);
+          setOpenedRecipeId(null); // Ferme la modale de détails
+        }
+      }
+    }
+  }, [recipes]);
+
+  const handleAnalyze = (recipe: Recipe) => {
+    setRecipeToAnalyze(recipe);
+    setIsChatOpen(true);
+    setOpenedRecipeId(null); // Ferme la modale de détails
+    window.location.hash = `details?recipeId=${recipe.id}`;
+  };
+
+  const handleOpenDetails = (recipeId: string) => {
+    setOpenedRecipeId(recipeId);
+    setRecipeToAnalyze(null); // Ferme le drawer d'analyse
+    setIsChatOpen(false);
+    window.location.hash = '';
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -161,7 +193,14 @@ export default function Home() {
           ) : (
             <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {recipes.map((recipe) => (
-                <RecipeCard key={recipe.id} recipe={recipe} />
+                <RecipeCard
+                  key={recipe.id}
+                  recipe={recipe}
+                  onAnalyze={handleAnalyze}
+                  open={openedRecipeId === recipe.id}
+                  onOpenDetails={() => handleOpenDetails(recipe.id)}
+                  onCloseDetails={() => setOpenedRecipeId(null)}
+                />
               ))}
             </div>
           )}
@@ -176,8 +215,7 @@ export default function Home() {
           </div>
         </div>
       </div>
-
-      <ChatDrawer isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+      <ChatDrawer isOpen={isChatOpen} onClose={() => { setIsChatOpen(false); setRecipeToAnalyze(null); window.location.hash = ''; }} recipeToAnalyze={recipeToAnalyze} />
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { usePathname } from 'next/navigation';
+import Head from 'next/head';
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -23,6 +24,12 @@ export default function RootLayout({
 
   return (
     <html lang="fr" className={inter.variable}>
+      <head>
+        <title>AirCook - Recettes et Assistant Nutritionnel</title>
+        <meta name="description" content="Découvrez des recettes délicieuses et analysez leur valeur nutritionnelle avec l'assistant AirCook" />
+        <link rel="icon" href="/aircooklogo.png" />
+        <link rel="apple-touch-icon" href="/aircooklogo.png" />
+      </head>
       <body className={`${inter.className} text-gray-900 antialiased flex flex-col min-h-screen`}>
         <AuthProvider>
           {!hideHeaderFooter && <Header />}

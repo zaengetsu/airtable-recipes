@@ -15,18 +15,48 @@ interface Message {
 interface ChatDrawerProps {
   isOpen: boolean;
   onClose: () => void;
+  recipeToAnalyze?: Recipe | null;
 }
 
-export default function ChatDrawer({ isOpen, onClose }: ChatDrawerProps) {
+export default function ChatDrawer({ isOpen, onClose, recipeToAnalyze }: ChatDrawerProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { token } = useAuth();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  // Si une recette à analyser est passée, lancer l'analyse automatiquement
+  useEffect(() => {
+    if (isOpen && recipeToAnalyze) {
+      setMessages([]);
+      setAnalysisResult(null);
+      (async () => {
+        setIsLoading(true);
+        try {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ai/nutrition`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ recipe: recipeToAnalyze })
+          });
+          if (!response.ok) throw new Error('Erreur lors de l\'analyse nutritionnelle');
+          const data = await response.json();
+          setAnalysisResult(data.analysis || 'Analyse nutritionnelle indisponible.');
+        } catch (error) {
+          setAnalysisResult('Erreur lors de l\'analyse nutritionnelle.');
+        } finally {
+          setIsLoading(false);
+        }
+      })();
+    }
+  }, [isOpen, recipeToAnalyze, token]);
 
   // Message d'accueil automatique à la première ouverture
   useEffect(() => {
@@ -124,7 +154,6 @@ export default function ChatDrawer({ isOpen, onClose }: ChatDrawerProps) {
           onClick={onClose}
         />
       )}
-
       {/* Drawer */}
       <div
         className={`fixed right-0 top-0 h-full w-[700px] max-w-full bg-gradient-to-br from-white via-gray-50 to-gray-200 shadow-2xl rounded-l-3xl border-l border-gray-200 transform transition-transform duration-300 ease-in-out z-50 ${
@@ -147,66 +176,95 @@ export default function ChatDrawer({ isOpen, onClose }: ChatDrawerProps) {
             </svg>
           </button>
         </div>
-
-        {/* Messages */}
-        <div className="h-[calc(100%-10.5rem)] overflow-y-auto p-6 space-y-4">
-          {messages.map((message, index) => (
-            <div
-              key={index}
-              className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div className={`max-w-[80%] ${
-                message.type === 'user'
-                  ? 'bg-black text-white rounded-2xl rounded-tr-none shadow-lg'
-                  : 'bg-white/80 text-gray-900 rounded-2xl rounded-tl-none border border-gray-200 shadow'
-              } p-4`}> 
-                <div className="whitespace-pre-wrap text-base leading-relaxed">{message.content}</div>
-                {message.recipes && message.recipes.map((recipe, idx) => (
-                  <div key={idx} className="mt-4 bg-white rounded-xl p-4 shadow border border-gray-100">
-                    <RecipeCard recipe={recipe} />
-                    <button
-                      onClick={() => handleCreateRecipe(recipe)}
-                      className="mt-2 w-full bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors font-semibold shadow"
-                    >
-                      Créer cette recette
-                    </button>
-                  </div>
-                ))}
+        {/* Card compacte de la recette à analyser */}
+        {recipeToAnalyze && (
+          <div className="p-6 border-b bg-white rounded-none flex items-center gap-6">
+            <img src={recipeToAnalyze.imageUrl || '/aircooklogo.png'} alt={recipeToAnalyze.name} className="h-24 w-32 object-cover rounded-xl border" />
+            <div>
+              <h3 className="text-xl font-bold text-gray-900 mb-1">{recipeToAnalyze.name}</h3>
+              <div className="text-gray-600 text-sm mb-2 line-clamp-2">{recipeToAnalyze.description}</div>
+              <div className="flex gap-4 text-xs text-gray-500">
+                <span>{recipeToAnalyze.preparationTime + recipeToAnalyze.cookingTime} min</span>
+                <span>{recipeToAnalyze.servings} pers.</span>
+                <span>{recipeToAnalyze.difficulty}</span>
               </div>
             </div>
-          ))}
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* Input */}
-        <form onSubmit={handleSubmit} className="p-6 border-t bg-gradient-to-r from-gray-100 via-white to-gray-50 rounded-bl-3xl">
-          <div className="flex space-x-2">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Décrivez vos ingrédients ou demandez une recette..."
-              className="flex-1 p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black bg-white shadow-sm text-base"
-              disabled={isLoading}
-            />
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="bg-black text-white px-5 py-3 rounded-xl hover:bg-gray-800 transition-colors font-semibold shadow disabled:opacity-50"
-            >
-              {isLoading ? (
-                <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                </svg>
-              )}
-            </button>
           </div>
-        </form>
+        )}
+        {/* Résultat de l'analyse nutritionnelle */}
+        {recipeToAnalyze && (
+          <div className="p-6">
+            {isLoading ? (
+              <div className="text-center text-gray-500">Analyse en cours...</div>
+            ) : (
+              <div className="bg-gray-100 rounded-xl p-4 text-gray-900 whitespace-pre-line">
+                {analysisResult}
+              </div>
+            )}
+          </div>
+        )}
+        {/* Chat classique si pas d'analyse */}
+        {!recipeToAnalyze && (
+          <>
+            <div className="h-[calc(100%-10.5rem)] overflow-y-auto p-6 space-y-4">
+              {messages.map((message, index) => (
+                <div
+                  key={index}
+                  className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div className={`max-w-[80%] ${
+                    message.type === 'user'
+                      ? 'bg-black text-white rounded-2xl rounded-tr-none shadow-lg'
+                      : 'bg-white/80 text-gray-900 rounded-2xl rounded-tl-none border border-gray-200 shadow'
+                  } p-4`}> 
+                    <div className="whitespace-pre-wrap text-base leading-relaxed">{message.content}</div>
+                    {message.recipes && message.recipes.map((recipe, idx) => (
+                      <div key={idx} className="mt-4 bg-white rounded-xl p-4 shadow border border-gray-100">
+                        <RecipeCard recipe={recipe} />
+                        <button
+                          onClick={() => handleCreateRecipe(recipe)}
+                          className="mt-2 w-full bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors font-semibold shadow"
+                        >
+                          Créer cette recette
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+            {/* Input */}
+            <form onSubmit={handleSubmit} className="p-6 border-t bg-gradient-to-r from-gray-100 via-white to-gray-50 rounded-bl-3xl">
+              <div className="flex space-x-2">
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Décrivez vos ingrédients ou demandez une recette..."
+                  className="flex-1 p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black bg-white shadow-sm text-base"
+                  disabled={isLoading}
+                />
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="bg-black text-white px-5 py-3 rounded-xl hover:bg-gray-800 transition-colors font-semibold shadow disabled:opacity-50"
+                >
+                  {isLoading ? (
+                    <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+            </form>
+          </>
+        )}
       </div>
     </>
   );
