@@ -128,6 +128,7 @@ Réponds de manière naturelle et amicale à cette salutation. Présente-toi com
 
 FORMAT DE RÉPONSE POUR UNE RECETTE :
 - Utilise du markdown avec des emojis et une mise en forme attrayante
+- **Le tableau des ingrédients doit être un tableau markdown standard, avec une ligne d'en-tête, une ligne de séparation avec des tirets, puis une ligne par ingrédient.**
 - Ajoute des conseils culinaires et des astuces
 - Inclus des variantes ou suggestions d'amélioration
 - Sois créatif dans la description et les instructions
@@ -147,17 +148,7 @@ Exemple de format :
 
 📝 **Instructions :**
 1. Étape détaillée
-...
-
-💡 **Conseils et astuces :**
-- Conseil 1
-- Conseil 2
-
-🔄 **Variantes :**
-- Variante 1
-- Variante 2
-
-Si tu détectes des allergènes, explique gentiment et propose des alternatives.`;
+...`;
         shouldGenerateRecipe = true;
       } else {
         userPrompt = `L'utilisateur a dit : "${message}". 
