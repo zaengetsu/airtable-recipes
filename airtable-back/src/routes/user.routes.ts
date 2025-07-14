@@ -4,6 +4,7 @@ import { airtableService } from './../lib/airtable.service'
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { CustomJwtPayload } from '../types/auth';
+import { AirtableUser } from '../types/airtable.types';
 
 const router = express.Router();
 
@@ -177,6 +178,22 @@ router.put('/password', authenticate, async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Error changing password:', error);
     res.status(500).json({ message: 'Error changing password' });
+  }
+});
+
+// Get all users (admin only)
+router.get('/', authenticate, authorize(['admin']), async (req: Request, res: Response) => {
+  try {
+    const users = await airtableService.getAllUsers();
+    
+    const usersWithoutPassword = users.map((user: AirtableUser) => {
+      const { password, ...userWithoutPassword } = user;
+      return userWithoutPassword;
+    });
+    res.json(usersWithoutPassword);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ message: 'Error fetching users' });
   }
 });
 

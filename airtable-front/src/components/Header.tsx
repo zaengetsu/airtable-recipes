@@ -129,6 +129,14 @@ export default function Header() {
                   >
                     Créer une recette
                   </Link>
+                  {user.role === 'admin' && (
+                    <Link
+                      href="/admin"
+                      className="block rounded-lg px-3 py-2 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-100"
+                    >
+                      Administration
+                    </Link>
+                  )}
                   <button
                     onClick={() => { logout(); router.refresh(); }}
                     className="block w-full rounded-lg px-3 py-2 text-left text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-100"
@@ -220,6 +228,14 @@ export default function Header() {
                     >
                       Créer une recette
                     </Link>
+                    {user.role === 'admin' && (
+                      <Link
+                        href="/admin"
+                        className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
+                      >
+                        Administration
+                      </Link>
+                    )}
                     <button
                       onClick={() => {
                         logout();

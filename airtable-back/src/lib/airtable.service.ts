@@ -411,6 +411,25 @@ export const airtableService = {
     }
   },
 
+  // Get all users (admin only)
+  async getAllUsers(): Promise<AirtableUser[]> {
+    try {
+      const records = await base('Users').select().all();
+      return records.map(record => ({
+        id: record.id,
+        username: record.get('username') as string,
+        email: record.get('email') as string,
+        password: record.get('password') as string,
+        role: record.get('role') as 'user' | 'admin',
+        allergies: JSON.parse(record.get('allergies') as string || '[]'),
+        createdAt: record.get('createdAt') as string,
+        updatedAt: record.get('updatedAt') as string,
+      }));
+    } catch (error) {
+      throw new AirtableError('Erreur lors de la récupération des utilisateurs');
+    }
+  },
+
   // Allergies
   async getAllAllergies(): Promise<AirtableAllergy[]> {
     try {
