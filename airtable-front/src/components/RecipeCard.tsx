@@ -2,11 +2,12 @@
 
 import React, { useState } from 'react';
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
-import { XMarkIcon, HeartIcon, ClockIcon, UserGroupIcon, FireIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, HeartIcon, ClockIcon, UserGroupIcon, FireIcon, EyeIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { Recipe } from '@/types/recipe';
 import { useAuth } from '@/contexts/AuthContext';
 import AllergyAlert from './AllergyAlert';
+import Link from 'next/link';
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -224,7 +225,7 @@ export function RecipeCard({ recipe, onAnalyze, open, onOpenDetails, onCloseDeta
                       </div>
                     )}
 
-                    {/* Bouton Analyse nutritionnelle juste en dessous */}
+                    {/* Bouton Analyse nutritionnelle */}
                     {onAnalyze && (
                       <div className="mb-6">
                         <button
