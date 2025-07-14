@@ -3,18 +3,26 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import { PhotoIcon, UserCircleIcon } from '@heroicons/react/24/solid';
-import { ChevronDownIcon } from '@heroicons/react/16/solid';
+import AllergySelector from '@/components/AllergySelector';
+import { UserCircleIcon } from '@heroicons/react/24/solid';
 
 export default function ProfilePage() {
   const { user, updateProfile, changePassword, error, isLoading } = useAuth();
 
-  const [username, setUsername] = useState(user?.username || '');
-  const [allergies, setAllergies] = useState<string[]>(user?.allergies || []);
+  const [username, setUsername] = useState('');
+  const [allergies, setAllergies] = useState<string[]>([]);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [message, setMessage] = useState('');
+
+  // Mettre à jour les états locaux quand l'utilisateur change
+  React.useEffect(() => {
+    if (user) {
+      setUsername(user.username || '');
+      setAllergies(user.allergies || []);
+    }
+  }, [user]);
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,6 +57,14 @@ export default function ProfilePage() {
     <ProtectedRoute>
       <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
+          {isLoading ? (
+            <div className="bg-white shadow sm:rounded-lg p-6">
+              <div className="flex justify-center items-center h-32">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                <span className="ml-3 text-gray-600">Chargement du profil...</span>
+              </div>
+            </div>
+          ) : (
           <div className="bg-white shadow sm:rounded-lg">
             <div className="px-4 py-5 sm:p-6">
               {message && (
@@ -93,17 +109,13 @@ export default function ProfilePage() {
                           Allergies
                         </label>
                         <div className="mt-2">
-                          <textarea
-                            id="allergies"
-                            name="allergies"
-                            rows={3}
-                            value={allergies.join(', ')}
-                            onChange={(e) => setAllergies(e.target.value.split(',').map(a => a.trim()))}
-                            placeholder="Séparez les allergies par des virgules"
-                            className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-black sm:text-sm/6"
+                          <AllergySelector
+                            selectedAllergies={allergies}
+                            onAllergiesChange={setAllergies}
+                            placeholder="Rechercher une allergie..."
                           />
                         </div>
-                        <p className="mt-3 text-sm/6 text-gray-600">Listez vos allergies alimentaires pour des recommandations personnalisées.</p>
+                        <p className="mt-3 text-sm/6 text-gray-600">Sélectionnez vos allergies alimentaires pour des recommandations personnalisées.</p>
                       </div>
 
                       <div className="col-span-full">
@@ -124,40 +136,10 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="border-b border-gray-900/10 pb-12">
-                    <h2 className="text-base/7 font-semibold text-gray-900">Informations personnelles</h2>
-                    <p className="mt-1 text-sm/6 text-gray-600">Utilisez une adresse permanente où vous pouvez recevoir du courrier.</p>
+                    <h2 className="text-base/7 font-semibold text-gray-900">Informations du compte</h2>
+                    <p className="mt-1 text-sm/6 text-gray-600">Informations de base de votre compte.</p>
 
                     <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
-                      <div className="sm:col-span-3">
-                        <label htmlFor="first-name" className="block text-sm/6 font-medium text-gray-900">
-                          Prénom
-                        </label>
-                        <div className="mt-2">
-                          <input
-                            id="first-name"
-                            name="first-name"
-                            type="text"
-                            autoComplete="given-name"
-                            className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-black sm:text-sm/6"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="sm:col-span-3">
-                        <label htmlFor="last-name" className="block text-sm/6 font-medium text-gray-900">
-                          Nom de famille
-                        </label>
-                        <div className="mt-2">
-                          <input
-                            id="last-name"
-                            name="last-name"
-                            type="text"
-                            autoComplete="family-name"
-                            className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-black sm:text-sm/6"
-                          />
-                        </div>
-                      </div>
-
                       <div className="sm:col-span-4">
                         <label htmlFor="email" className="block text-sm/6 font-medium text-gray-900">
                           Adresse email
@@ -173,88 +155,21 @@ export default function ProfilePage() {
                             className="block w-full rounded-md bg-gray-100 px-3 py-1.5 text-base text-gray-500 outline outline-1 -outline-offset-1 outline-gray-300 sm:text-sm/6"
                           />
                         </div>
-                      </div>
-
-                      <div className="sm:col-span-3">
-                        <label htmlFor="country" className="block text-sm/6 font-medium text-gray-900">
-                          Pays
-                        </label>
-                        <div className="mt-2 grid grid-cols-1">
-                          <select
-                            id="country"
-                            name="country"
-                            autoComplete="country-name"
-                            className="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1.5 pl-3 pr-8 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-black sm:text-sm/6"
-                          >
-                            <option>France</option>
-                            <option>Belgique</option>
-                            <option>Suisse</option>
-                            <option>Canada</option>
-                            <option>États-Unis</option>
-                          </select>
-                          <ChevronDownIcon
-                            aria-hidden="true"
-                            className="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="col-span-full">
-                        <label htmlFor="street-address" className="block text-sm/6 font-medium text-gray-900">
-                          Adresse
-                        </label>
-                        <div className="mt-2">
-                          <input
-                            id="street-address"
-                            name="street-address"
-                            type="text"
-                            autoComplete="street-address"
-                            className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-black sm:text-sm/6"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="sm:col-span-2 sm:col-start-1">
-                        <label htmlFor="city" className="block text-sm/6 font-medium text-gray-900">
-                          Ville
-                        </label>
-                        <div className="mt-2">
-                          <input
-                            id="city"
-                            name="city"
-                            type="text"
-                            autoComplete="address-level2"
-                            className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-black sm:text-sm/6"
-                          />
-                        </div>
+                        <p className="mt-3 text-sm/6 text-gray-600">L'adresse email ne peut pas être modifiée.</p>
                       </div>
 
                       <div className="sm:col-span-2">
-                        <label htmlFor="region" className="block text-sm/6 font-medium text-gray-900">
-                          Région / Département
+                        <label htmlFor="role" className="block text-sm/6 font-medium text-gray-900">
+                          Rôle
                         </label>
                         <div className="mt-2">
                           <input
-                            id="region"
-                            name="region"
+                            id="role"
+                            name="role"
                             type="text"
-                            autoComplete="address-level1"
-                            className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-black sm:text-sm/6"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="sm:col-span-2">
-                        <label htmlFor="postal-code" className="block text-sm/6 font-medium text-gray-900">
-                          Code postal
-                        </label>
-                        <div className="mt-2">
-                          <input
-                            id="postal-code"
-                            name="postal-code"
-                            type="text"
-                            autoComplete="postal-code"
-                            className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-black sm:text-sm/6"
+                            value={user?.role}
+                            disabled
+                            className="block w-full rounded-md bg-gray-100 px-3 py-1.5 text-base text-gray-500 outline outline-1 -outline-offset-1 outline-gray-300 sm:text-sm/6"
                           />
                         </div>
                       </div>
@@ -344,6 +259,7 @@ export default function ProfilePage() {
               </form>
             </div>
           </div>
+          )}
         </div>
       </div>
     </ProtectedRoute>

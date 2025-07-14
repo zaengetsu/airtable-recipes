@@ -6,7 +6,7 @@ import { Recipe } from '@/types/recipe';
 import ChatDrawer from '@/components/ChatDrawer';
 import { LifebuoyIcon, NewspaperIcon, PhoneIcon, SparklesIcon, UserGroupIcon, ClockIcon } from '@heroicons/react/20/solid';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 const features = [
   {

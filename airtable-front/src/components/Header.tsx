@@ -28,13 +28,13 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
 const products = [
-  { name: 'Nouvelle recette', description: 'Créez votre propre recette', href: '/recipes/new', icon: CursorArrowRaysIcon },
+  { name: 'Nouvelle recette', description: 'Créez votre propre recette', href: '/create-recipe', icon: CursorArrowRaysIcon },
   { name: 'Suggestions', description: 'Recettes personnalisées', href: '/suggestions', icon: ArrowPathIcon },
   { name: 'Mon profil', description: 'Voir mon profil et mes recettes', href: '/profile', icon: FingerPrintIcon },
 ];
 
 const callsToAction = [
-  { name: 'Créer une recette', href: '/recipes/new', icon: PlayCircleIcon },
+  { name: 'Créer une recette', href: '/create-recipe', icon: PlayCircleIcon },
   { name: 'Nous contacter', href: '/contact', icon: PhoneIcon },
 ];
 
@@ -124,7 +124,7 @@ export default function Header() {
                     Mon profil
                   </Link>
                   <Link
-                    href="/recipes/new"
+                    href="/create-recipe"
                     className="block rounded-lg px-3 py-2 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-100"
                   >
                     Créer une recette

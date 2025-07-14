@@ -5,6 +5,8 @@ import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
 import { XMarkIcon, HeartIcon, ClockIcon, UserGroupIcon, FireIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { Recipe } from '@/types/recipe';
+import { useAuth } from '@/contexts/AuthContext';
+import AllergyAlert from './AllergyAlert';
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -56,6 +58,10 @@ const getCategoryColors = (category: string) => {
 export function RecipeCard({ recipe, onAnalyze, open, onOpenDetails, onCloseDetails }: RecipeCardProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const isOpen = open !== undefined ? open : internalOpen;
+  const { user } = useAuth();
+  
+  // Extraire les noms d'ingrédients pour la vérification d'allergies
+  const ingredientNames = recipe.ingredients.map(ing => ing.name || ing.toString());
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -208,6 +214,16 @@ export function RecipeCard({ recipe, onAnalyze, open, onOpenDetails, onCloseDeta
                         </span>
                       </div>
                     </div>
+                    {/* Alerte d'allergies */}
+                    {user && user.allergies && user.allergies.length > 0 && (
+                      <div className="mb-6">
+                        <AllergyAlert
+                          userAllergies={user.allergies}
+                          recipeIngredients={ingredientNames}
+                        />
+                      </div>
+                    )}
+
                     {/* Bouton Analyse nutritionnelle juste en dessous */}
                     {onAnalyze && (
                       <div className="mb-6">

@@ -10,7 +10,7 @@ import React, {
 } from 'react';
 import { useRouter } from 'next/navigation';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 interface User {
   id: string;
@@ -131,11 +131,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
       setError(null);
 
+      const currentToken = localStorage.getItem('token');
+      if (!currentToken) {
+        throw new Error('Token non trouvé');
+      }
+
       const response = await fetch(`${API_URL}/users/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${currentToken}`,
         },
         body: JSON.stringify({ username, allergies }),
       });
@@ -161,11 +166,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
       setError(null);
 
-      const response = await fetch(`${API_URL}/users/change-password`, {
+      const currentToken = localStorage.getItem('token');
+      if (!currentToken) {
+        throw new Error('Token non trouvé');
+      }
+
+      const response = await fetch(`${API_URL}/users/password`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${currentToken}`,
         },
         body: JSON.stringify({ currentPassword, newPassword }),
       });
