@@ -5,7 +5,8 @@ export class AllergyController {
   // Obtenir toutes les allergies
   static async getAllAllergies(req: Request, res: Response, next: NextFunction) {
     try {
-      const allergies = await allergyService.getAllAllergies();
+      const search = req.query.search as string;
+      const allergies = await allergyService.getAllAllergies(search);
       res.json(allergies);
     } catch (error) {
       next(error);
