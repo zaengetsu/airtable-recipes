@@ -20,12 +20,18 @@ export class AIController {
   // Analyser la valeur nutritionnelle
   static async analyzeNutrition(req: Request, res: Response, next: NextFunction) {
     try {
-      const { ingredients } = req.body;
+      const { ingredients, recipeName } = req.body;
       
-      const analysis = await groqService.analyzeNutrition(ingredients);
+      // Convertir les ingrédients en chaîne de caractères pour l'analyse textuelle
+      const ingredientsText = ingredients.map((ing: any) => 
+        `${ing.name || ing.toString()}${ing.quantity ? ` (${ing.quantity}${ing.unit || 'g'})` : ''}`
+      ).join(', ');
       
-      res.json(analysis);
+      const analysis = await groqService.analyzeNutritionText(recipeName || 'Recette', ingredientsText);
+      
+      res.json({ analysis });
     } catch (error) {
+      console.error('Erreur dans analyzeNutrition:', error);
       next(error);
     }
   }

@@ -6,12 +6,13 @@ import { ArrowLeftIcon, HeartIcon, ClockIcon, UserGroupIcon, FireIcon } from '@h
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import AllergyAlert from '@/components/AllergyAlert';
+import ChatDrawer from '@/components/ChatDrawer';
 
 interface Ingredient {
   id: string;
   name: string;
   unit: string;
-  quantity?: number;
+  quantity: number;
 }
 
 interface Recipe {
@@ -22,7 +23,7 @@ interface Recipe {
   instructions: string[];
   cookingTime: number;
   preparationTime: number;
-  difficulty: string;
+  difficulty: 'Facile' | 'Moyen' | 'Difficile';
   servings: number;
   category: string;
   likes: number;
@@ -33,6 +34,8 @@ interface Recipe {
   };
   createdAt: string;
   updatedAt: string;
+  isPublic: boolean;
+  authorID: string;
 }
 
 const PLACEHOLDER_IMAGES = [
@@ -80,6 +83,8 @@ export default function RecipePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [recipeToAnalyze, setRecipeToAnalyze] = useState<Recipe | null>(null);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -106,6 +111,20 @@ export default function RecipePage() {
 
     fetchRecipe();
   }, [params.id]);
+
+  // Écouter l'événement pour ouvrir le drawer d'analyse nutritionnelle
+  useEffect(() => {
+    const handleOpenNutritionAnalysis = (event: CustomEvent) => {
+      setRecipeToAnalyze(event.detail.recipe);
+      setIsChatOpen(true);
+    };
+
+    window.addEventListener('openNutritionAnalysis', handleOpenNutritionAnalysis as EventListener);
+
+    return () => {
+      window.removeEventListener('openNutritionAnalysis', handleOpenNutritionAnalysis as EventListener);
+    };
+  }, []);
 
   const nextImage = () => {
     setCurrentImageIndex((prev) => (prev + 1) % PLACEHOLDER_IMAGES.length);
@@ -242,6 +261,22 @@ export default function RecipePage() {
           </div>
         )}
 
+        {/* Bouton Analyse nutritionnelle */}
+        <div className="mb-6">
+          <button
+            onClick={() => {
+              // Ouvrir le drawer d'analyse nutritionnelle directement
+              const event = new CustomEvent('openNutritionAnalysis', {
+                detail: { recipe }
+              });
+              window.dispatchEvent(event);
+            }}
+            className="w-full rounded-md bg-black px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 transition-colors"
+          >
+            Analyse nutritionnelle
+          </button>
+        </div>
+
         {/* Description */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Description</h3>
@@ -296,6 +331,13 @@ export default function RecipePage() {
           </div>
         </div>
       </div>
+
+      {/* ChatDrawer pour l'analyse nutritionnelle */}
+      <ChatDrawer
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+        recipeToAnalyze={recipeToAnalyze}
+      />
     </div>
   );
 } 
