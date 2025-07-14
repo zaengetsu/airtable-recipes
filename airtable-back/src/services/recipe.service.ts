@@ -1,4 +1,4 @@
-import { AirtableError, AirtableRecipe } from '../types/airtable.types';
+import { AirtableError, AirtableRecipe } from '../types/airtable';
 import { tables } from '../lib/airtable';
 
 const parseIngredients = (ingredientsString: string) => {

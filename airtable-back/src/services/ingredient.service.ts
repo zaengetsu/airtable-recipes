@@ -1,4 +1,4 @@
-import { AirtableError, AirtableIngredient } from '../types/airtable.types';
+import { AirtableError, AirtableIngredient } from '../types/airtable';
 import { tables } from '../lib/airtable';
 
 export const ingredientService = {

@@ -1,4 +1,4 @@
-import { AirtableError, AirtableUser } from '../types/airtable.types';
+import { AirtableError, AirtableUser } from '../types/airtable';
 import { tables } from '../lib/airtable';
 
 export const userService = {

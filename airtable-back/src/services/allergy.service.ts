@@ -1,4 +1,4 @@
-import { AirtableError, AirtableAllergy } from '../types/airtable.types';
+import { AirtableError, AirtableAllergy } from '../types/airtable';
 import { tables } from '../lib/airtable';
 
 export const allergyService = {

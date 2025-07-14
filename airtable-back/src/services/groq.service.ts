@@ -1,5 +1,5 @@
 import { Groq } from 'groq-sdk';
-import { AirtableIngredient } from '../types/airtable.types';
+import { AirtableIngredient } from '../types/airtable';
 import { NutritionalAnalysis, GeneratedRecipe } from '../types';
 import { 
   CHAT_SYSTEM_PROMPT,
