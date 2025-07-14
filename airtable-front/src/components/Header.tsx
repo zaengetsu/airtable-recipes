@@ -92,7 +92,7 @@ export default function Header() {
           {user && (
             <Link
               href="/create-recipe"
-              className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition-colors"
+              className="rounded-md bg-[#3A94A5] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#2d7a87] transition-colors"
             >
               Nouvelle recette
             </Link>
