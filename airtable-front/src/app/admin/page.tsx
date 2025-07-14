@@ -9,7 +9,10 @@ import {
   BookOpenIcon, 
   ChartBarIcon, 
   ClockIcon,
-  ExclamationTriangleIcon 
+  ExclamationTriangleIcon,
+  ArrowRightIcon,
+  UserGroupIcon,
+  PuzzlePieceIcon
 } from '@heroicons/react/24/outline';
 
 interface DashboardStats {
@@ -203,28 +206,81 @@ export default function AdminDashboard() {
           )}
 
           {/* Actions rapides */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">
               Actions rapides
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Gestion des utilisateurs */}
               <Link
                 href="/admin/users"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors text-center"
+                className="group bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 hover:border-blue-200"
               >
-                Voir les utilisateurs
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg">
+                      <UserGroupIcon className="h-8 w-8 text-white" />
+                    </div>
+                    <ArrowRightIcon className="h-5 w-5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all duration-300" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Gestion des utilisateurs
+                  </h3>
+                  <p className="text-gray-600 text-sm mb-4">
+                    Consultez et gérez les comptes utilisateurs, les rôles et les permissions
+                  </p>
+                  <div className="flex items-center text-sm text-blue-600 font-medium">
+                    <span>{stats.totalUsers} utilisateur(s)</span>
+                  </div>
+                </div>
               </Link>
+
+              {/* Gestion des recettes */}
               <Link
                 href="/admin/recipes"
-                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors text-center"
+                className="group bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 hover:border-green-200"
               >
-                Voir les recettes
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-lg">
+                      <BookOpenIcon className="h-8 w-8 text-white" />
+                    </div>
+                    <ArrowRightIcon className="h-5 w-5 text-gray-400 group-hover:text-green-600 group-hover:translate-x-1 transition-all duration-300" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Gestion des recettes
+                  </h3>
+                  <p className="text-gray-600 text-sm mb-4">
+                    Consultez toutes les recettes créées et gérez leur visibilité
+                  </p>
+                  <div className="flex items-center text-sm text-green-600 font-medium">
+                    <span>{stats.totalRecipes} recette(s)</span>
+                  </div>
+                </div>
               </Link>
+
+              {/* Gestion des ingrédients */}
               <Link
                 href="/admin/ingredients"
-                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors text-center"
+                className="group bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 hover:border-purple-200"
               >
-                Voir les ingrédients
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg">
+                      <PuzzlePieceIcon className="h-8 w-8 text-white" />
+                    </div>
+                    <ArrowRightIcon className="h-5 w-5 text-gray-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all duration-300" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Gestion des ingrédients
+                  </h3>
+                  <p className="text-gray-600 text-sm mb-4">
+                    Consultez la base de données des ingrédients et leurs propriétés
+                  </p>
+                  <div className="flex items-center text-sm text-purple-600 font-medium">
+                    <span>{stats.totalIngredients} ingrédient(s)</span>
+                  </div>
+                </div>
               </Link>
             </div>
           </div>
