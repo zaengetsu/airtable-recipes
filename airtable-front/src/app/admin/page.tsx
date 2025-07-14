@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import Header from '@/components/Header';
+import Link from 'next/link';
 import { 
   UsersIcon, 
   BookOpenIcon, 
@@ -100,8 +100,8 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <main className="container mx-auto px-4 py-8">
+    <div className="bg-gray-50">
+      <div className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto">
           {/* En-tête */}
           <div className="mb-8">
@@ -187,19 +187,25 @@ export default function AdminDashboard() {
               Actions rapides
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+              <Link
+                href="/admin/users"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors text-center"
+              >
                 Gérer les utilisateurs
-              </button>
-              <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors">
+              </Link>
+              <Link
+                href="/admin/recipes"
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors text-center"
+              >
                 Modérer les recettes
-              </button>
+              </Link>
               <button className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors">
                 Voir les logs
               </button>
             </div>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 } 

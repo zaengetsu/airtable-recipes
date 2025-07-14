@@ -6,7 +6,6 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { usePathname } from 'next/navigation';
-import Head from 'next/head';
 
 const inter = Inter({ 
   subsets: ['latin'],
