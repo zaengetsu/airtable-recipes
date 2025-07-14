@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Dialog,
   DialogPanel,
@@ -11,37 +11,46 @@ import {
   PopoverButton,
   PopoverGroup,
   PopoverPanel,
+  Transition,
 } from '@headlessui/react';
 import {
-  ArrowPathIcon,
   Bars3Icon,
-  ChartPieIcon,
-  CursorArrowRaysIcon,
-  FingerPrintIcon,
-  SquaresPlusIcon,
+  BookOpenIcon,
   XMarkIcon,
   UserCircleIcon,
+  UserIcon,
+  Cog6ToothIcon,
+  ArrowRightStartOnRectangleIcon,
 } from '@heroicons/react/24/outline';
-import { ChevronDownIcon, PhoneIcon, PlayCircleIcon } from '@heroicons/react/20/solid';
+import { ChevronDownIcon } from '@heroicons/react/20/solid';
+import { Fragment } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
-const products = [
-  { name: 'Nouvelle recette', description: 'Créez votre propre recette', href: '/create-recipe', icon: CursorArrowRaysIcon },
-  { name: 'Suggestions', description: 'Recettes personnalisées', href: '/suggestions', icon: ArrowPathIcon },
-  { name: 'Mon profil', description: 'Voir mon profil et mes recettes', href: '/profile', icon: FingerPrintIcon },
-];
-
-const callsToAction = [
-  { name: 'Créer une recette', href: '/create-recipe', icon: PlayCircleIcon },
-  { name: 'Nous contacter', href: '/contact', icon: PhoneIcon },
-];
-
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const { user, isLoading, logout } = useAuth();
   const router = useRouter();
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  // Gestionnaire de clic global pour fermer le popover
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+        setIsPopoverOpen(false);
+      }
+    };
+
+    if (isPopoverOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isPopoverOpen]);
 
   if (isLoading) {
     return (
@@ -77,67 +86,85 @@ export default function Header() {
           </button>
         </div>
         <PopoverGroup className="hidden lg:flex lg:gap-x-12"> 
-          <Popover className="relative">
-            <PopoverButton className="flex items-center gap-x-1 text-sm font-semibold leading-6 text-gray-900">
-              Menu
-              <ChevronDownIcon className="h-5 w-5 flex-none text-gray-400" aria-hidden="true" />
-            </PopoverButton>
-            <PopoverPanel className="absolute -left-8 top-full z-10 mt-3 w-screen max-w-md overflow-hidden rounded-3xl bg-white shadow-lg ring-1 ring-gray-900/5">
-              <div className="p-4">
-                {products.map((item) => (
-                  <div
-                    key={item.name}
-                    className="group relative flex items-center gap-x-6 rounded-lg p-4 text-sm leading-6 hover:bg-gray-50"
-                  >
-                    {/* Icône supprimée */}
-                    <div className="flex-auto">
-                      <Link href={item.href} className="block font-semibold text-gray-900">
-                        {item.name}
-                        <span className="absolute inset-0" />
-                      </Link>
-                      <p className="mt-1 text-gray-600">{item.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              {/* Section boutons supprimée */}
-            </PopoverPanel>
-          </Popover>
-          <Link href="/profile" className="text-sm font-semibold leading-6 text-gray-900">
-            Mon profil
-          </Link>
+          {/* Rien ici, menu supprimé */}
         </PopoverGroup>
-        <div className="hidden lg:flex lg:flex-1 lg:justify-end">
+        <div className="hidden lg:flex lg:flex-1 lg:justify-end items-center gap-x-4">
+          {user && (
+            <Link
+              href="/create-recipe"
+              className="rounded-md bg-[#3A94A5] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#2d7a87] transition-colors"
+            >
+              Nouvelle recette
+            </Link>
+          )}
           {user ? (
-            <Popover className="relative">
-              <PopoverButton className="flex items-center gap-x-1 text-sm font-semibold leading-6 text-gray-900 hover:text-gray-800">
+            <div ref={popoverRef} className="relative">
+              <button
+                onClick={() => setIsPopoverOpen(!isPopoverOpen)}
+                className="flex items-center gap-x-1 text-sm font-semibold leading-6 text-gray-900 hover:text-gray-800"
+              >
                 <UserCircleIcon className="h-6 w-6" aria-hidden="true" />
-                <span className="hidden sm:block">{user.email}</span>
-                <ChevronDownIcon className="h-5 w-5 flex-none text-gray-400" aria-hidden="true" />
-              </PopoverButton>
-              <PopoverPanel className="absolute right-0 top-full z-10 mt-3 w-48 overflow-hidden rounded-3xl bg-white shadow-lg ring-1 ring-gray-900/5">
-                <div className="p-2">
-                  <Link
-                    href="/profile"
-                    className="block rounded-lg px-3 py-2 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-100"
-                  >
-                    Mon profil
-                  </Link>
-                  <Link
-                    href="/create-recipe"
-                    className="block rounded-lg px-3 py-2 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-100"
-                  >
-                    Créer une recette
-                  </Link>
-                  <button
-                    onClick={() => { logout(); router.refresh(); }}
-                    className="block w-full rounded-lg px-3 py-2 text-left text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-100"
-                  >
-                    Déconnexion
-                  </button>
+                <span className="hidden sm:block">{user.username}</span>
+                <ChevronDownIcon 
+                  className={`h-5 w-5 flex-none transition duration-150 ease-in-out ${
+                    isPopoverOpen ? 'text-gray-600' : 'text-gray-400'
+                  }`} 
+                  aria-hidden="true" 
+                />
+              </button>
+              <Transition
+                show={isPopoverOpen}
+                as={Fragment}
+                enter="transition ease-out duration-200"
+                enterFrom="opacity-0 translate-y-1"
+                enterTo="opacity-100 translate-y-0"
+                leave="transition ease-in duration-150"
+                leaveFrom="opacity-100 translate-y-0"
+                leaveTo="opacity-0 translate-y-1"
+              >
+                <div className="absolute right-0 top-full z-10 mt-3 w-48 overflow-hidden rounded-3xl bg-white shadow-lg ring-1 ring-gray-900/5">
+                  <div className="p-2">
+                    <Link
+                      href="/profile"
+                      onClick={() => setIsPopoverOpen(false)}
+                      className="flex items-center rounded-lg px-3 py-2 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-100 transition duration-150 ease-in-out"
+                    >
+                      <UserIcon className="h-4 w-4 mr-3" />
+                      Mon profil
+                    </Link>
+                    <Link
+                      href="/create-recipe"
+                      onClick={() => setIsPopoverOpen(false)}
+                      className="flex items-center rounded-lg px-3 py-2 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-100 transition duration-150 ease-in-out"
+                    >
+                      <BookOpenIcon className="h-4 w-4 mr-3" />
+                      Créer une recette
+                    </Link>
+                    {user.role === 'admin' && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setIsPopoverOpen(false)}
+                        className="flex items-center rounded-lg px-3 py-2 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-100 transition duration-150 ease-in-out"
+                      >
+                        <Cog6ToothIcon className="h-4 w-4 mr-3" />
+                        Administration
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => { 
+                        setIsPopoverOpen(false);
+                        logout(); 
+                        router.refresh(); 
+                      }}
+                      className="flex items-center w-full rounded-lg px-3 py-2 text-left text-sm font-semibold leading-6 text-red-600 hover:bg-red-50 transition duration-150 ease-in-out"
+                    >
+                      <ArrowRightStartOnRectangleIcon className="h-4 w-4 mr-3" />
+                      Déconnexion
+                    </button>
+                  </div>
                 </div>
-              </PopoverPanel>
-            </Popover>
+              </Transition>
+            </div>
           ) : (
             <div className="flex items-center gap-x-4">
               <Link href="/login" className="text-sm font-semibold leading-6 text-gray-900 hover:text-gray-800">
@@ -182,25 +209,7 @@ export default function Header() {
                     Menu
                     <ChevronDownIcon className="h-5 w-5 flex-none" aria-hidden="true" />
                   </DisclosureButton>
-                  <DisclosurePanel className="mt-2 space-y-2">
-                    {products.map((item) => (
-                      <DisclosureButton
-                        key={item.name}
-                        as={Link}
-                        href={item.href}
-                        className="block rounded-lg py-2 pl-6 pr-3 text-sm font-semibold leading-7 text-gray-900 hover:bg-gray-50"
-                      >
-                        {item.name}
-                      </DisclosureButton>
-                    ))}
-                  </DisclosurePanel>
                 </Disclosure>
-                <Link
-                  href="/profile"
-                  className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
-                >
-                  Mon profil
-                </Link>
               </div>
               <div className="py-6">
                 {user ? (
@@ -220,6 +229,14 @@ export default function Header() {
                     >
                       Créer une recette
                     </Link>
+                    {user.role === 'admin' && (
+                      <Link
+                        href="/admin"
+                        className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
+                      >
+                        Administration
+                      </Link>
+                    )}
                     <button
                       onClick={() => {
                         logout();

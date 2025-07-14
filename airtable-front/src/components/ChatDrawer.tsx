@@ -63,8 +63,6 @@ export default function ChatDrawer({ isOpen, onClose, recipeToAnalyze }: ChatDra
         setIsLoading(true);
         try {
           // Analyser la nutrition via le backend (comme le chat)
-          const ingredients = recipeToAnalyze.ingredients.map(ing => ing.name).join(', ');
-          
           const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/ai/analyze-nutrition`, {
             method: 'POST',
             headers: {
@@ -73,7 +71,7 @@ export default function ChatDrawer({ isOpen, onClose, recipeToAnalyze }: ChatDra
             },
             body: JSON.stringify({
               recipeName: recipeToAnalyze.name,
-              ingredients: ingredients
+              ingredients: recipeToAnalyze.ingredients
             })
           });
 

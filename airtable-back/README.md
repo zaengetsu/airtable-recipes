@@ -22,61 +22,87 @@ Backend de l'application de gestion de projets ESGI, développé avec Node.js, E
 - bcrypt pour le hachage des mots de passe
 - cors pour la gestion des CORS
 
+## Configuration
+
+Assurez-vous d'avoir un fichier `.env.local` avec les variables suivantes :
+- `AIRTABLE_API_KEY` : Votre clé API Airtable
+- `AIRTABLE_BASE_ID` : L'ID de votre base Airtable
+
+## Initialisation Airtable
+
+Le projet utilise une initialisation centralisée d'Airtable pour éviter la duplication de code. Voici comment l'utiliser :
+
+### Import de l'initialisation
+
+```typescript
+import { tables, testConnection } from '../lib/airtable';
+```
+
+### Utilisation directe des tables
+
+```typescript
+// Accès direct aux tables
+const recipes = await tables.recipes.select().all();
+const users = await tables.users.find('user_id');
+const ingredients = await tables.ingredients.create({ name: 'Tomato' });
+```
+
+### Utilisation des services spécifiques
+
+```typescript
+// Import des services spécifiques
+import { recipeService } from '../services/recipe.service';
+import { userService } from '../services/user.service';
+import { ingredientService } from '../services/ingredient.service';
+import { allergyService } from '../services/allergy.service';
+import { nutritionalAnalysisService } from '../services/nutritionalAnalysis.service';
+
+// Utilisation
+const recipe = await recipeService.getRecipeById('recipe_id');
+const user = await userService.getUserByEmail('user@example.com');
+const ingredients = await ingredientService.getAllIngredients();
+```
+
+### Test de connexion
+
+```typescript
+// Tester la connexion à Airtable
+const isConnected = await testConnection();
+if (isConnected) {
+  console.log('✅ Connexion réussie');
+} else {
+  console.log('❌ Erreur de connexion');
+}
+```
+
+## Tables disponibles
+
+- `tables.recipes` - Table des recettes
+- `tables.users` - Table des utilisateurs
+- `tables.ingredients` - Table des ingrédients
+- `tables.allergies` - Table des allergies
+- `tables.nutritionalAnalysis` - Table des analyses nutritionnelles
+- `tables.projects` - Table des projets
+- `tables.comments` - Table des commentaires
+
+## Services disponibles
+
+- `recipeService` - Gestion des recettes
+- `userService` - Gestion des utilisateurs
+- `ingredientService` - Gestion des ingrédients
+- `allergyService` - Gestion des allergies
+- `nutritionalAnalysisService` - Gestion des analyses nutritionnelles
+
+## Avantages de cette approche
+
+1. **Initialisation unique** : Une seule instance d'Airtable est créée
+2. **Gestion centralisée des erreurs** : Configuration et vérification au démarrage
+3. **Services spécialisés** : Chaque service gère sa propre logique métier
+4. **Maintenance simplifiée** : Un seul endroit pour modifier la configuration
+5. **Performance** : Évite la création multiple de connexions
+
 ## Installation
 
 1. Cloner le repository :
-```bash
-git clone https://github.com/zaengetsu/airtable-back.git
-cd airtable-back
 ```
-
-2. Installer les dépendances :
-```bash
-npm install
 ```
-
-3. Lancer le serveur en mode développement :
-```bash
-npm run dev
-```
-
-Le serveur démarrera sur le port 4000.
-
-## Structure de l'API
-
-### Authentification
-- `POST /api/auth/login` - Connexion
-- `POST /api/auth/register` - Inscription
-
-### Projets
-- `GET /api/projects` - Liste des projets
-- `GET /api/projects/:id` - Détails d'un projet
-- `POST /api/projects` - Création d'un projet
-- `PUT /api/projects/:id` - Modification d'un projet
-- `DELETE /api/projects/:id` - Suppression d'un projet
-
-### Commentaires
-- `GET /api/comments/project/:projectID` - Commentaires d'un projet
-- `POST /api/comments` - Création d'un commentaire
-- `PUT /api/comments/:id` - Modification d'un commentaire
-- `DELETE /api/comments/:id` - Suppression d'un commentaire
-
-## Compte test
-Pour tester l'application, vous pouvez utiliser le compte admin suivant :
-- Username : zango
-- Password : mespotes
-
-## Membres du projet
-- Leonce Yopa
-
-## Sécurité
-- Authentification JWT
-- Hachage des mots de passe avec bcrypt
-- Protection des routes avec middleware
-- Validation des données
-- Gestion des CORS
-
-## Limitations actuelles
-- Seuls les admins et les auteurs peuvent modifier/supprimer les projets
-- Les commentaires sont en cours de développement
-

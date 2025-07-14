@@ -29,16 +29,15 @@ export default function AllergySelector({
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
   // Charger les suggestions depuis l'API
-  const loadSuggestions = async (query: string) => {
-    if (query.length < 2) {
-      setSuggestions([]);
-      return;
-    }
-
+  const loadSuggestions = async (query?: string) => {
     setIsLoading(true);
     try {
-      console.log('Recherche d\'allergies pour:', query);
-      const response = await fetch(`/api/allergies?search=${encodeURIComponent(query)}`);
+      const url = query && query.length >= 2 
+        ? `${process.env.NEXT_PUBLIC_API_URL}/allergies?search=${encodeURIComponent(query)}`
+        : `${process.env.NEXT_PUBLIC_API_URL}/allergies`;
+      
+      console.log('Chargement allergies:', url);
+      const response = await fetch(url);
       console.log('Response status:', response.status);
       
       if (response.ok) {
@@ -61,13 +60,24 @@ export default function AllergySelector({
     }
   };
 
+  // Charger toutes les allergies au focus
+  const handleInputFocus = () => {
+    setShowSuggestions(true);
+    if (suggestions.length === 0) {
+      loadSuggestions();
+    }
+  };
+
   // Recherche avec debounce
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      loadSuggestions(searchTerm);
-    }, 300);
-
-    return () => clearTimeout(timeoutId);
+    if (searchTerm.length >= 2) {
+      const timeoutId = setTimeout(() => {
+        loadSuggestions(searchTerm);
+      }, 300);
+      return () => clearTimeout(timeoutId);
+    } else if (searchTerm.length === 0 && showSuggestions) {
+      loadSuggestions();
+    }
   }, [searchTerm]);
 
   // Fermer les suggestions quand on clique ailleurs
@@ -156,7 +166,7 @@ export default function AllergySelector({
           value={searchTerm}
           onChange={handleInputChange}
           onKeyPress={handleKeyPress}
-          onFocus={() => setShowSuggestions(true)}
+          onFocus={handleInputFocus}
           placeholder={placeholder}
           className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-black sm:text-sm/6"
         />
@@ -167,7 +177,7 @@ export default function AllergySelector({
         )}
 
         {/* Suggestions */}
-        {showSuggestions && (searchTerm.length >= 2 || isLoading) && (
+        {showSuggestions && (
           <div
             ref={suggestionsRef}
             className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto"

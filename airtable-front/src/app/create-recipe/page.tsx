@@ -180,12 +180,7 @@ export default function CreateRecipePage() {
     setError('');
 
     try {
-      console.log('=== FRONTEND CRÉATION RECETTE ===');
-      console.log('Form data:', JSON.stringify(formData, null, 2));
-      console.log('User:', user);
-      
       const token = localStorage.getItem('token');
-      console.log('Token available:', !!token);
       
       // Nettoyer les ingrédients en générant des id temporaires
       const cleanedIngredients = formData.ingredients.map((ing, index) => ({
@@ -201,15 +196,9 @@ export default function CreateRecipePage() {
         authorID: user?.id
       };
       
-      console.log('Request body:', JSON.stringify(requestBody, null, 2));
-
-      console.log('API_URL value:', API_URL);
-      console.log('process.env.NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL);
-      
       // Use the environment variable correctly, handling trailing slash
       const baseUrl = (process.env.NEXT_PUBLIC_API_URL || '/api').replace(/\/$/, '');
-              const apiUrl = `${baseUrl}/recipes`;
-      console.log('Final API URL:', apiUrl);
+      const apiUrl = `${baseUrl}/recipes`;
 
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -220,20 +209,14 @@ export default function CreateRecipePage() {
         body: JSON.stringify(requestBody)
       });
 
-      console.log('Response status:', response.status);
-      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('Response error:', errorData);
         throw new Error(errorData.message || 'Erreur lors de la création de la recette');
       }
 
       const recipe = await response.json();
-      console.log('Recipe created:', recipe);
       router.push(`/recipe/${recipe.id}`);
     } catch (err) {
-      console.error('Frontend error:', err);
       setError(err instanceof Error ? err.message : 'Une erreur est survenue');
     } finally {
       setIsLoading(false);

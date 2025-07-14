@@ -13,10 +13,11 @@ async function testConnection() {
   try {
     console.log('Test de connexion à Airtable...');
     
-    // Tenter de lister les tables de la base
-    const tables = await base.tables;
+    // Tenter d'accéder à une table pour tester la connexion
+    const testTable = base('Users');
+    const records = await testTable.select({ maxRecords: 1 }).all();
     console.log('Connexion réussie !');
-    console.log('Tables trouvées :', tables.map(table => table.name));
+    console.log('Table Users accessible, nombre d\'enregistrements :', records.length);
     
   } catch (error) {
     console.error('Erreur de connexion :', error);

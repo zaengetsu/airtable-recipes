@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 4000;
 app.use(cors({
   origin: ['http://localhost:3000', 'http://localhost:3001'],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
@@ -36,8 +36,4 @@ app.use((req: express.Request, res: express.Response) => {
 // Démarrage du serveur
 app.listen(PORT, () => {
   console.log(`Backend server is running on port ${PORT}`);
-  console.log('Configuration Airtable:', {
-    apiKey: process.env.AIRTABLE_API_KEY ? 'Présente' : 'Manquante',
-    baseId: process.env.AIRTABLE_BASE_ID ? 'Présent' : 'Manquant'
-  });
 });

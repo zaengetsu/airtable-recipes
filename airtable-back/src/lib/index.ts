@@ -1,2 +1,2 @@
-export { airtableService } from './airtable.service';
-export { GroqService } from './groq.service'; 
+export { GroqService } from '../services/groq.service';
+export { tables, testConnection } from './airtable'; 
