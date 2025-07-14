@@ -38,7 +38,7 @@ router.post('/', authenticate, validateRecipe, async (req, res, next) => {
     
     const recipeData = {
       ...req.body,
-      authorID: req.user?.id
+      authorID: "chef" // Utiliser une valeur qui existe dans les options du Multiple Select
     };
     
     console.log('Recipe data to create:', JSON.stringify(recipeData, null, 2));
@@ -62,7 +62,7 @@ router.put('/:id', authenticate, validateRecipe, async (req, res, next) => {
     }
 
     // Vérifier si l'utilisateur est l'auteur ou un admin
-    if (recipe.authorID !== req.user?.userId && req.user?.role !== 'admin') {
+    if (recipe.authorID !== req.user?.id && req.user?.role !== 'admin') {
       res.status(403).json({ message: 'Non autorisé à modifier cette recette' });
       return;
     }
@@ -84,7 +84,7 @@ router.delete('/:id', authenticate, async (req, res, next) => {
     }
 
     // Vérifier si l'utilisateur est l'auteur ou un admin
-    if (recipe.authorID !== req.user?.userId && req.user?.role !== 'admin') {
+    if (recipe.authorID !== req.user?.id && req.user?.role !== 'admin') {
       res.status(403).json({ message: 'Non autorisé à supprimer cette recette' });
       return;
     }

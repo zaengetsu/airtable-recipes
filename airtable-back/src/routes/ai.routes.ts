@@ -160,7 +160,7 @@ router.post('/generate-recipe', authenticate, async (req, res, next) => {
       ...generatedRecipe,
       ingredients: formattedIngredients,
       instructions: typeof generatedRecipe.instructions === 'string' ? generatedRecipe.instructions.split('\n') : generatedRecipe.instructions,
-      authorID: req.user?.userId || '',
+      authorID: "chef",
       isPublic: true
     });
 
@@ -212,7 +212,7 @@ router.post('/create-recipe', authenticate, async (req, res) => {
     // Créer la recette dans Airtable
     const recipe = await airtableService.createRecipe({
       ...recipeData,
-      authorID: userId
+      authorID: "chef"
     });
     res.json({ recipe });
   } catch (error) {

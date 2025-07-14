@@ -5,18 +5,33 @@ import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useRouter } from 'next/navigation';
 import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+import IngredientSelector from '@/components/IngredientSelector';
 
-interface Ingredient {
+interface RecipeIngredient {
   id: string;
   name: string;
   quantity: number;
   unit: string;
+  calories?: number;
+  proteins?: number;
+  carbs?: number;
+  fats?: number;
+}
+
+interface Ingredient {
+  id: string;
+  name: string;
+  unit: string;
+  calories?: number;
+  proteins?: number;
+  carbs?: number;
+  fats?: number;
 }
 
 interface RecipeFormData {
   name: string;
   description: string;
-  ingredients: Ingredient[];
+  ingredients: RecipeIngredient[];
   instructions: string[];
   servings: number;
   preparationTime: number;
@@ -88,12 +103,25 @@ export default function CreateRecipePage() {
     }
   };
 
-  const updateIngredient = (index: number, field: keyof Ingredient, value: string | number) => {
+  const updateIngredient = (index: number, field: keyof RecipeIngredient, value: string | number) => {
     setFormData(prev => ({
       ...prev,
       ingredients: prev.ingredients.map((ing, i) => 
         i === index ? { ...ing, [field]: value } : ing
       )
+    }));
+  };
+
+  const handleIngredientsChange = (selectedIngredients: Ingredient[]) => {
+    // Convertir les ingrédients sélectionnés au format attendu avec quantité
+    const ingredientsWithQuantity: RecipeIngredient[] = selectedIngredients.map(ing => ({
+      ...ing,
+      quantity: 1 // Quantité par défaut
+    }));
+    
+    setFormData(prev => ({
+      ...prev,
+      ingredients: ingredientsWithQuantity
     }));
   };
 
@@ -159,8 +187,17 @@ export default function CreateRecipePage() {
       const token = localStorage.getItem('token');
       console.log('Token available:', !!token);
       
+      // Nettoyer les ingrédients en générant des id temporaires
+      const cleanedIngredients = formData.ingredients.map((ing, index) => ({
+        id: `temp_${Date.now()}_${index}`,
+        name: ing.name,
+        quantity: ing.quantity,
+        unit: ing.unit
+      }));
+
       const requestBody = {
         ...formData,
+        ingredients: cleanedIngredients,
         authorID: user?.id
       };
       
@@ -240,65 +277,63 @@ export default function CreateRecipePage() {
 
       case 2:
         return (
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-medium text-gray-900">Ingrédients</h3>
-              <button
-                type="button"
-                onClick={addIngredient}
-                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-black hover:bg-gray-800"
-              >
-                <PlusIcon className="h-4 w-4 mr-2" />
-                Ajouter
-              </button>
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Sélection des ingrédients</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Recherchez et sélectionnez les ingrédients de votre recette. Vous pouvez aussi ajouter des ingrédients personnalisés.
+              </p>
+              
+              <IngredientSelector
+                selectedIngredients={formData.ingredients}
+                onIngredientsChange={handleIngredientsChange}
+                placeholder="Rechercher un ingrédient..."
+              />
             </div>
 
-            {formData.ingredients.map((ingredient, index) => (
-              <div key={index} className="flex gap-4 items-end">
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-900">
-                    Nom de l'ingrédient *
-                  </label>
-                  <input
-                    type="text"
-                    value={ingredient.name}
-                    onChange={(e) => updateIngredient(index, 'name', e.target.value)}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm"
-                    placeholder="Ex: Farine"
-                  />
-                </div>
-                <div className="w-20">
-                  <label className="block text-sm font-medium text-gray-900">Qté</label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.5"
-                    value={ingredient.quantity}
-                    onChange={(e) => updateIngredient(index, 'quantity', parseFloat(e.target.value) || 0)}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm"
-                  />
-                </div>
-                <div className="w-24">
-                  <label className="block text-sm font-medium text-gray-900">Unité</label>
-                  <input
-                    type="text"
-                    value={ingredient.unit}
-                    onChange={(e) => updateIngredient(index, 'unit', e.target.value)}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm"
-                    placeholder="g, ml, etc."
-                  />
-                </div>
-                {formData.ingredients.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeIngredient(index)}
-                    className="p-2 text-red-600 hover:text-red-800"
-                  >
-                    <TrashIcon className="h-5 w-5" />
-                  </button>
-                )}
+            {/* Section pour ajuster les quantités */}
+            {formData.ingredients.length > 0 && (
+              <div className="space-y-4">
+                <h4 className="font-medium text-gray-900">Ajuster les quantités</h4>
+                {formData.ingredients.map((ingredient, index) => (
+                  <div key={index} className="flex gap-4 items-end">
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium text-gray-900">
+                        {ingredient.name}
+                      </label>
+                    </div>
+                    <div className="w-20">
+                      <label className="block text-sm font-medium text-gray-900">Qté</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.5"
+                        value={ingredient.quantity}
+                        onChange={(e) => updateIngredient(index, 'quantity', parseFloat(e.target.value) || 0)}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                      />
+                    </div>
+                    <div className="w-24">
+                      <label className="block text-sm font-medium text-gray-900">Unité</label>
+                      <input
+                        type="text"
+                        value={ingredient.unit}
+                        onChange={(e) => updateIngredient(index, 'unit', e.target.value)}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm"
+                        placeholder="g, ml, etc."
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeIngredient(index)}
+                      className="p-2 text-red-600 hover:text-red-800"
+                    >
+                      <TrashIcon className="h-5 w-5" />
+                    </button>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
           </div>
         );
 

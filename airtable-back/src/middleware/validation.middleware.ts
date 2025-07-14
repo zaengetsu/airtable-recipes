@@ -16,8 +16,15 @@ export const validateRecipe = (req: Request, res: Response, next: NextFunction) 
     throw new ValidationError('Au moins un ingrédient est requis');
   }
 
-  if (!instructions || typeof instructions !== 'string' || instructions.length < 20) {
-    throw new ValidationError('Les instructions sont requises et doivent faire au moins 20 caractères');
+  if (!Array.isArray(instructions) || instructions.length === 0) {
+    throw new ValidationError('Au moins une instruction est requise');
+  }
+
+  // Vérifier que chaque instruction est une chaîne non vide
+  for (let i = 0; i < instructions.length; i++) {
+    if (!instructions[i] || typeof instructions[i] !== 'string' || instructions[i].trim().length === 0) {
+      throw new ValidationError(`L'instruction ${i + 1} est requise et ne peut pas être vide`);
+    }
   }
 
   if (!servings || typeof servings !== 'number' || servings < 1) {

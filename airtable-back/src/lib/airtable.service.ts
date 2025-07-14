@@ -15,6 +15,17 @@ if (!process.env.AIRTABLE_API_KEY || !process.env.AIRTABLE_BASE_ID) {
 
 const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(process.env.AIRTABLE_BASE_ID!);
 
+// Fonction helper pour traiter les ingrédients
+const parseIngredients = (ingredientsString: string) => {
+  if (!ingredientsString) return [];
+  return ingredientsString.split(', ').map(ing => ({
+    id: '',
+    name: ing,
+    quantity: 0,
+    unit: ''
+  }));
+};
+
 // Vérifier la connexion à la base
 base('Recipes').select({ maxRecords: 1 }).firstPage()
   .then(records => {
@@ -36,19 +47,14 @@ export const airtableService = {
       
       return records.map(record => {
         try {
-          const ingredients = record.get('ingredients') as string[];
+          const ingredients = parseIngredients(record.get('ingredients') as string);
           const instructions = (record.get('instructions') as string).split('\\n');
           
           return {
             id: record.id,
             name: record.get('name') as string,
             description: record.get('description') as string,
-            ingredients: ingredients.map(ing => ({
-              id: '',
-              name: ing,
-              quantity: 0,
-              unit: ''
-            })),
+            ingredients: ingredients,
             instructions: instructions,
             servings: record.get('servings') as number,
             preparationTime: record.get('preparationTime') as number,
@@ -82,7 +88,7 @@ export const airtableService = {
         id: record.id,
         name: record.get('name') as string,
         description: record.get('description') as string,
-        ingredients: JSON.parse(record.get('ingredients') as string || '[]'),
+        ingredients: parseIngredients(record.get('ingredients') as string),
         instructions: JSON.parse(record.get('instructions') as string || '[]'),
         servings: record.get('servings') as number,
         preparationTime: record.get('preparationTime') as number,
@@ -110,10 +116,18 @@ export const airtableService = {
       console.log('=== AIRTABLE CREATE RECIPE ===');
       console.log('Recipe data received:', JSON.stringify(recipe, null, 2));
       
+      // Préparer les ingrédients comme une chaîne simple
+      const ingredientsField = recipe.ingredients.map(ing => `${ing.quantity} ${ing.unit} ${ing.name}`).join(', ');
+
+      console.log('Ingrédients à envoyer:', ingredientsField);
+
+      // Utiliser l'authorID de l'utilisateur connecté ou "chef" par défaut
+      const authorID = "chef"; // Utiliser une valeur qui existe dans les options du Multiple Select
+
       const record = await base('Recipes').create({
         name: recipe.name,
         description: recipe.description,
-        ingredients: JSON.stringify(recipe.ingredients),
+        ingredients: ingredientsField,
         instructions: JSON.stringify(recipe.instructions),
         servings: recipe.servings,
         preparationTime: recipe.preparationTime,
@@ -122,7 +136,7 @@ export const airtableService = {
         category: recipe.category,
         imageUrl: recipe.imageUrl,
         isPublic: recipe.isPublic,
-        authorID: recipe.authorID,
+        authorID: authorID,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         likes: 0,
@@ -135,7 +149,7 @@ export const airtableService = {
         id: record.id,
         name: record.get('name') as string,
         description: record.get('description') as string,
-        ingredients: JSON.parse(record.get('ingredients') as string || '[]'),
+        ingredients: parseIngredients(record.get('ingredients') as string),
         instructions: JSON.parse(record.get('instructions') as string || '[]'),
         servings: record.get('servings') as number,
         preparationTime: record.get('preparationTime') as number,
@@ -167,7 +181,7 @@ export const airtableService = {
 
       if (data.name) updateData.name = data.name;
       if (data.description) updateData.description = data.description;
-      if (data.ingredients) updateData.ingredients = JSON.stringify(data.ingredients);
+      if (data.ingredients) updateData.ingredients = data.ingredients.map(ing => `${ing.quantity} ${ing.unit} ${ing.name}`).join(', ');
       if (data.instructions) updateData.instructions = JSON.stringify(data.instructions);
       if (data.servings) updateData.servings = data.servings;
       if (data.preparationTime) updateData.preparationTime = data.preparationTime;
@@ -184,7 +198,7 @@ export const airtableService = {
         id: record.id,
         name: record.get('name') as string,
         description: record.get('description') as string,
-        ingredients: JSON.parse(record.get('ingredients') as string || '[]'),
+        ingredients: parseIngredients(record.get('ingredients') as string),
         instructions: JSON.parse(record.get('instructions') as string || '[]'),
         servings: record.get('servings') as number,
         preparationTime: record.get('preparationTime') as number,
@@ -215,8 +229,13 @@ export const airtableService = {
   // Ingrédients
   async getAllIngredients(): Promise<AirtableIngredient[]> {
     try {
+      console.log('=== GET ALL INGREDIENTS ===');
+      console.log('Tentative d\'accès à la table Ingredients...');
+      
       const records = await base('Ingredients').select().all();
-      return records.map(record => ({
+      console.log('Records récupérés:', records.length);
+      
+      const ingredients = records.map(record => ({
         id: record.id,
         name: record.get('name') as string,
         calories: record.get('calories') as number,
@@ -228,7 +247,11 @@ export const airtableService = {
         allergens: JSON.parse(record.get('allergens') as string || '[]'),
         unit: record.get('unit') as string,
       }));
+      
+      console.log('Ingrédients mappés:', ingredients.length);
+      return ingredients;
     } catch (error) {
+      console.error('Erreur détaillée getAllIngredients:', error);
       throw new AirtableError('Erreur lors de la récupération des ingrédients');
     }
   },
@@ -440,7 +463,7 @@ export const airtableService = {
         id: record.id,
         name: record.get('name') as string,
         description: record.get('description') as string,
-        ingredients: JSON.parse(record.get('ingredients') as string || '[]'),
+        ingredients: parseIngredients(record.get('ingredients') as string),
         instructions: JSON.parse(record.get('instructions') as string || '[]'),
         servings: record.get('servings') as number,
         preparationTime: record.get('preparationTime') as number,
@@ -472,7 +495,7 @@ export const airtableService = {
         id: record.id,
         name: record.get('name') as string,
         description: record.get('description') as string,
-        ingredients: JSON.parse(record.get('ingredients') as string || '[]'),
+        ingredients: parseIngredients(record.get('ingredients') as string),
         instructions: JSON.parse(record.get('instructions') as string || '[]'),
         servings: record.get('servings') as number,
         preparationTime: record.get('preparationTime') as number,
@@ -504,7 +527,7 @@ export const airtableService = {
         id: record.id,
         name: record.get('name') as string,
         description: record.get('description') as string,
-        ingredients: JSON.parse(record.get('ingredients') as string || '[]'),
+        ingredients: parseIngredients(record.get('ingredients') as string),
         instructions: JSON.parse(record.get('instructions') as string || '[]'),
         servings: record.get('servings') as number,
         preparationTime: record.get('preparationTime') as number,
