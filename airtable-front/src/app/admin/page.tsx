@@ -123,31 +123,38 @@ export default function AdminDashboard() {
 
   return (
     <div className="bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-7xl mx-auto">
-          {/* En-tête */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Tableau de bord d'administration
-            </h1>
-            <p className="text-gray-600">
-              Gestion et statistiques de la plateforme de recettes
-            </p>
+      {stats.isLoading ? (
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Chargement du tableau de bord...</p>
           </div>
-
-          {/* Statistiques */}
-          {stats.isLoading ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            </div>
-          ) : stats.error ? (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+        </div>
+      ) : stats.error ? (
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-6">
               <div className="flex items-center">
                 <ExclamationTriangleIcon className="h-5 w-5 text-red-400 mr-2" />
                 <span className="text-red-800">{stats.error}</span>
               </div>
             </div>
-          ) : (
+          </div>
+        </div>
+      ) : (
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-7xl mx-auto">
+            {/* En-tête */}
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Tableau de bord d'administration
+              </h1>
+              <p className="text-gray-600">
+                Gestion et statistiques de la plateforme de recettes
+              </p>
+            </div>
+
+            {/* Statistiques */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
               {/* Utilisateurs */}
               <div className="bg-white rounded-lg shadow-md p-6">
@@ -175,8 +182,6 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-
-
               {/* Recettes récentes */}
               <div className="bg-white rounded-lg shadow-md p-6">
                 <div className="flex items-center">
@@ -190,89 +195,89 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </div>
-          )}
 
-          {/* Actions rapides */}
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">
-              Actions rapides
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Gestion des utilisateurs */}
-              <Link
-                href="/admin/users"
-                className="group bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 hover:border-blue-200"
-              >
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg">
-                      <UserGroupIcon className="h-8 w-8 text-white" />
+            {/* Actions rapides */}
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                Actions rapides
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Gestion des utilisateurs */}
+                <Link
+                  href="/admin/users"
+                  className="group bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 hover:border-blue-200"
+                >
+                  <div className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg">
+                        <UserGroupIcon className="h-8 w-8 text-white" />
+                      </div>
+                      <ArrowRightIcon className="h-5 w-5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all duration-300" />
                     </div>
-                    <ArrowRightIcon className="h-5 w-5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all duration-300" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      Gestion des clients
+                    </h3>
+                    <p className="text-gray-600 text-sm mb-4">
+                      Consultez et gérez les comptes clients et leurs profils
+                    </p>
+                    <div className="flex items-center text-sm text-blue-600 font-medium">
+                      <span>{stats.totalUsers} client(s)</span>
+                    </div>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Gestion des utilisateurs
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-4">
-                    Consultez et gérez les comptes utilisateurs, les rôles et les permissions
-                  </p>
-                  <div className="flex items-center text-sm text-blue-600 font-medium">
-                    <span>{stats.totalUsers} utilisateur(s)</span>
-                  </div>
-                </div>
-              </Link>
+                </Link>
 
-              {/* Gestion des recettes */}
-              <Link
-                href="/admin/recipes"
-                className="group bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 hover:border-green-200"
-              >
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-lg">
-                      <BookOpenIcon className="h-8 w-8 text-white" />
+                {/* Gestion des recettes */}
+                <Link
+                  href="/admin/recipes"
+                  className="group bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 hover:border-green-200"
+                >
+                  <div className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-lg">
+                        <BookOpenIcon className="h-8 w-8 text-white" />
+                      </div>
+                      <ArrowRightIcon className="h-5 w-5 text-gray-400 group-hover:text-green-600 group-hover:translate-x-1 transition-all duration-300" />
+                  </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      Gestion des recettes
+                    </h3>
+                    <p className="text-gray-600 text-sm mb-4">
+                      Consultez toutes les recettes créées et gérez leur visibilité
+                    </p>
+                    <div className="flex items-center text-sm text-green-600 font-medium">
+                      <span>{stats.totalRecipes} recette(s)</span>
                     </div>
-                    <ArrowRightIcon className="h-5 w-5 text-gray-400 group-hover:text-green-600 group-hover:translate-x-1 transition-all duration-300" />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Gestion des recettes
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-4">
-                    Consultez toutes les recettes créées et gérez leur visibilité
-                  </p>
-                  <div className="flex items-center text-sm text-green-600 font-medium">
-                    <span>{stats.totalRecipes} recette(s)</span>
-                  </div>
-                </div>
-              </Link>
+                </Link>
 
-              {/* Gestion des ingrédients */}
-              <Link
-                href="/admin/ingredients"
-                className="group bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 hover:border-purple-200"
-              >
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg">
-                      <PuzzlePieceIcon className="h-8 w-8 text-white" />
+                {/* Gestion des ingrédients */}
+                <Link
+                  href="/admin/ingredients"
+                  className="group bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 hover:border-purple-200"
+                >
+                  <div className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg">
+                        <PuzzlePieceIcon className="h-8 w-8 text-white" />
+                      </div>
+                      <ArrowRightIcon className="h-5 w-5 text-gray-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all duration-300" />
                     </div>
-                    <ArrowRightIcon className="h-5 w-5 text-gray-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all duration-300" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      Gestion des ingrédients
+                    </h3>
+                    <p className="text-gray-600 text-sm mb-4">
+                      Consultez la base de données des ingrédients et leurs propriétés
+                    </p>
+                    <div className="flex items-center text-sm text-purple-600 font-medium">
+                      <span>Base de données</span>
+                    </div>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Gestion des ingrédients
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-4">
-                    Consultez la base de données des ingrédients et leurs propriétés
-                  </p>
-                  <div className="flex items-center text-sm text-purple-600 font-medium">
-                    <span>{stats.totalIngredients} ingrédient(s)</span>
-                  </div>
-                </div>
-              </Link>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 } 
