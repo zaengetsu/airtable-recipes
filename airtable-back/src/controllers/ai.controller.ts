@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { GroqService } from '../lib/groq.service';
+import { GroqService } from '../services/groq.service';
 
 const groqService = new GroqService();
 
