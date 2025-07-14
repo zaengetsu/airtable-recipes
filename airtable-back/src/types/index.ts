@@ -37,3 +37,5 @@ export interface Comment {
   Auteur: string;
   CreatedAt?: string;
 }
+
+export * from './groq.types';

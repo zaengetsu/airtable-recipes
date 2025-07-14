@@ -1,5 +1,6 @@
 import { Groq } from 'groq-sdk';
 import { AirtableIngredient } from '../types/airtable.types';
+import { NutritionalAnalysis, GeneratedRecipe } from '../types';
 import { 
   CHAT_SYSTEM_PROMPT,
   NUTRITION_ANALYSIS_PROMPT,
@@ -14,32 +15,6 @@ import {
 } from './ai';
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
-
-interface NutritionalAnalysis {
-  totalCalories: number;
-  totalProteins: number;
-  totalCarbs: number;
-  totalFats: number;
-  vitamins: string[];
-  minerals: string[];
-  allergens: string[];
-}
-
-interface GeneratedRecipe {
-  name: string;
-  description: string;
-  ingredients: Array<{
-    name: string;
-    quantity: string;
-    unit: string;
-  }>;
-  instructions: string;
-  servings: number;
-  preparationTime: number;
-  cookingTime: number;
-  difficulty: 'Facile' | 'Moyen' | 'Difficile';
-  category: string;
-}
 
 export class GroqService {
   private client: Groq;

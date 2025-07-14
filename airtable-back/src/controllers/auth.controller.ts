@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from 'express';
 import { userService } from '../services';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { AuthenticatedRequest } from '../types/auth';
 
 export class AuthController {
   // Inscription

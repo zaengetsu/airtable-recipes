@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import { recipeService } from '../services';
-import { AuthenticatedRequest } from '../types/auth';
 
 export class RecipeController {
   // Obtenir toutes les recettes

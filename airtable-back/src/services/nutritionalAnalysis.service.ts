@@ -1,4 +1,3 @@
-import { AirtableError, AirtableNutritionalAnalysis } from '../types/airtable.types';
 import { tables } from '../lib/airtable';
 
 export const nutritionalAnalysisService = {

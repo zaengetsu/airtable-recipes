@@ -1,4 +1,3 @@
-import { FieldSet, Record as AirtableRecord } from 'airtable';
 import { AirtableError, AirtableRecipe } from '../types/airtable.types';
 import { tables } from '../lib/airtable';
 
