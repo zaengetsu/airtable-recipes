@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { 
   UsersIcon, 
   ExclamationTriangleIcon,
+  ArrowLeftIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
@@ -95,21 +96,21 @@ export default function AdminUsersPage() {
         <div className="max-w-7xl mx-auto">
           {/* En-tête */}
           <div className="mb-8">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                  Gestion des utilisateurs
-                </h1>
-                <p className="text-gray-600">
-                  {users.length} utilisateur(s) inscrit(s) sur la plateforme
-                </p>
-              </div>
+            <div className="flex items-center mb-4">
               <Link
                 href="/admin"
-                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors"
+                className="mr-4 p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                Retour au dashboard
+                <ArrowLeftIcon className="h-6 w-6 text-gray-600" />
               </Link>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                  Gestion des clients
+                </h1>
+                <p className="text-gray-600">
+                  {users.filter(user => user.role === 'user').length} client(s) inscrit(s) sur la plateforme
+                </p>
+              </div>
             </div>
           </div>
 
@@ -134,7 +135,7 @@ export default function AdminUsersPage() {
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Utilisateur
+                        Client
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Rôle
@@ -207,14 +208,14 @@ export default function AdminUsersPage() {
                 </table>
               </div>
               
-              {users.length === 0 && (
+              {users.filter(user => user.role === 'user').length === 0 && (
                 <div className="text-center py-8">
                   <UsersIcon className="mx-auto h-12 w-12 text-gray-400" />
                   <h3 className="mt-2 text-sm font-medium text-gray-900">
-                    Aucun utilisateur inscrit
+                    Aucun client inscrit
                   </h3>
                   <p className="mt-1 text-sm text-gray-500">
-                    Aucun utilisateur n'est inscrit pour le moment.
+                    Aucun client n'est inscrit pour le moment.
                   </p>
                 </div>
               )}

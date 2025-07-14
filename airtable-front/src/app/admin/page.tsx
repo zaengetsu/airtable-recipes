@@ -57,9 +57,7 @@ export default function AdminDashboard() {
         const recipesResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/recipes`);
         const recipes = await recipesResponse.json();
 
-        // Récupérer les ingrédients
-        const ingredientsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ingredients`);
-        const ingredients = await ingredientsResponse.json();
+
 
         // Récupérer les utilisateurs (nécessite une route admin)
         const usersResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
@@ -83,9 +81,9 @@ export default function AdminDashboard() {
         }).length;
 
         setStats({
-          totalUsers: users.length,
+          totalUsers: users.filter((user: any) => user.role === 'user').length,
           totalRecipes: recipes.length,
-          totalIngredients: ingredients.length,
+          totalIngredients: 0,
           recentRecipes,
           isLoading: false,
           error: null
@@ -150,7 +148,7 @@ export default function AdminDashboard() {
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
               {/* Utilisateurs */}
               <div className="bg-white rounded-lg shadow-md p-6">
                 <div className="flex items-center">
@@ -158,7 +156,7 @@ export default function AdminDashboard() {
                     <UsersIcon className="h-6 w-6 text-blue-600" />
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Utilisateurs</p>
+                    <p className="text-sm font-medium text-gray-600">Clients</p>
                     <p className="text-2xl font-bold text-gray-900">{stats.totalUsers}</p>
                   </div>
                 </div>
@@ -177,18 +175,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              {/* Ingrédients */}
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-yellow-100 rounded-lg">
-                    <ChartBarIcon className="h-6 w-6 text-yellow-600" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Ingrédients</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.totalIngredients}</p>
-                  </div>
-                </div>
-              </div>
+
 
               {/* Recettes récentes */}
               <div className="bg-white rounded-lg shadow-md p-6">
@@ -197,7 +184,7 @@ export default function AdminDashboard() {
                     <ClockIcon className="h-6 w-6 text-purple-600" />
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Nouvelles (7j)</p>
+                    <p className="text-sm font-medium text-gray-600">Nouvelles recettes (7 derniers jours)</p>
                     <p className="text-2xl font-bold text-gray-900">{stats.recentRecipes}</p>
                   </div>
                 </div>

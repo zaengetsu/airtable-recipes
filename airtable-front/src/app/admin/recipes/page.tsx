@@ -8,7 +8,7 @@ import {
   ExclamationTriangleIcon,
   ClockIcon,
   UserGroupIcon,
-  FireIcon
+  ArrowLeftIcon
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
@@ -107,7 +107,13 @@ export default function AdminRecipesPage() {
         <div className="max-w-7xl mx-auto">
           {/* En-tête */}
           <div className="mb-8">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center mb-4">
+              <Link
+                href="/admin"
+                className="mr-4 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <ArrowLeftIcon className="h-6 w-6 text-gray-600" />
+              </Link>
               <div>
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">
                   Gestion des recettes
@@ -116,12 +122,6 @@ export default function AdminRecipesPage() {
                   {recipes.length} recette(s) créée(s) sur la plateforme
                 </p>
               </div>
-              <Link
-                href="/admin"
-                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors"
-              >
-                Retour au dashboard
-              </Link>
             </div>
           </div>
 
