@@ -6,6 +6,58 @@ import { GroqService } from '../lib/groq.service';
 const router = express.Router();
 const groqService = new GroqService();
 
+// Fonction utilitaire pour formater une recette avec du markdown esthétique
+function formatRecipeWithMarkdown(recipeData: any): string {
+  const difficultyEmoji = {
+    'Facile': '🟢',
+    'Moyen': '🟡',
+    'Difficile': '🔴'
+  };
+
+  const categoryEmoji = {
+    'Plat principal': '🍽️',
+    'Entrée': '🥗',
+    'Dessert': '🍰',
+    'Petit déjeuner': '🥐',
+    'Goûter': '🍪',
+    'Apéritif': '🥂',
+    'Soupe': '🍲',
+    'Salade': '🥗',
+    'Pâtes': '🍝',
+    'Pizza': '🍕',
+    'Burger': '🍔',
+    'Sushi': '🍣',
+    'Tarte': '🥧',
+    'Gâteau': '🎂'
+  };
+
+  const timeEmoji = '⏱️';
+  const servingsEmoji = '👥';
+  const ingredientsEmoji = '🥘';
+  const instructionsEmoji = '📝';
+
+  const title = `## 🎯 **${recipeData.name}**`;
+  const description = `*${recipeData.description}*`;
+
+  const ingredients = recipeData.ingredients.map((ing: any) =>
+    `• **${ing.quantity} ${ing.unit}** ${ing.name}`
+  ).join('\n');
+
+  const instructions = recipeData.instructions.map((step: string, i: number) =>
+    `${i + 1}. ${step}`
+  ).join('\n');
+
+  const info = [
+    `${servingsEmoji} **Portions :** ${recipeData.servings}`,
+    `${timeEmoji} **Préparation :** ${recipeData.preparationTime} min`,
+    `${timeEmoji} **Cuisson :** ${recipeData.cookingTime} min`,
+    `${difficultyEmoji[recipeData.difficulty as keyof typeof difficultyEmoji] || '📊'} **Difficulté :** ${recipeData.difficulty}`,
+    `${categoryEmoji[recipeData.category as keyof typeof categoryEmoji] || '🏷️'} **Catégorie :** ${recipeData.category}`
+  ].join(' | ');
+
+  return `${title}\n\n${description}\n\n${ingredientsEmoji} **Ingrédients :**\n${ingredients}\n\n${instructionsEmoji} **Instructions :**\n${instructions}\n\n---\n${info}`;
+}
+
 // Analyser la nutrition d'une recette
 router.post('/analyze-nutrition/:recipeId', authenticate, async (req, res, next) => {
   try {
@@ -32,13 +84,36 @@ router.post('/analyze-nutrition/:recipeId', authenticate, async (req, res, next)
     // Analyser la nutrition
     const analysis = await groqService.analyzeNutrition(ingredients);
 
+    // Formater l'analyse pour l'affichage
+    const formattedAnalysis = `
+## 📊 **Analyse Nutritionnelle**
+
+**Valeurs nutritionnelles par portion :**
+• **Calories :** ${analysis.totalCalories} kcal
+• **Protéines :** ${analysis.totalProteins} g
+• **Glucides :** ${analysis.totalCarbs} g
+• **Lipides :** ${analysis.totalFats} g
+
+**Vitamines présentes :**
+${analysis.vitamins.map(vitamin => `• ${vitamin}`).join('\n')}
+
+**Minéraux présents :**
+${analysis.minerals.map(mineral => `• ${mineral}`).join('\n')}
+
+**Allergènes détectés :**
+${analysis.allergens.length > 0 ? analysis.allergens.map(allergen => `• ${allergen}`).join('\n') : 'Aucun allergène détecté'}
+    `.trim();
+
     // Sauvegarder l'analyse dans Airtable
     const savedAnalysis = await airtableService.createNutritionalAnalysis({
       recipeID: req.params.recipeId,
       ...analysis
     });
 
-    res.json(savedAnalysis);
+    res.json({
+      analysis: formattedAnalysis,
+      data: savedAnalysis
+    });
   } catch (error) {
     next(error);
   }
@@ -53,6 +128,11 @@ router.post('/generate-recipe', authenticate, async (req, res, next) => {
       return;
     }
 
+    // Récupérer les allergies de l'utilisateur
+    const userId = req.user?.id || '';
+    const user = await airtableService.getUserById(userId);
+    const userAllergies = user?.allergies || [];
+
     // Récupérer les détails des ingrédients
     const ingredientDetails = await Promise.all(
       ingredients.map(async (ingredientName: string) => {
@@ -64,8 +144,8 @@ router.post('/generate-recipe', authenticate, async (req, res, next) => {
       })
     );
 
-    // Générer la recette
-    const generatedRecipe = await groqService.generateRecipe(ingredientDetails);
+    // Générer la recette en tenant compte des allergies
+    const generatedRecipe = await groqService.generateRecipe(ingredientDetails, userAllergies);
 
     // Adapter les ingrédients pour respecter le type attendu
     const formattedIngredients = generatedRecipe.ingredients.map((ing, idx) => ({
@@ -94,13 +174,18 @@ router.post('/chat', authenticate, async (req, res) => {
   try {
     const { message, conversationHistory } = req.body;
     const userId = req.user?.id || '';
-    // Appeler le LLM pour générer une réponse
-    const response = await groqService.chat(message, conversationHistory);
+
+    // Récupérer les allergies de l'utilisateur
+    const user = await airtableService.getUserById(userId);
+    const userAllergies = user?.allergies || [];
+
+    // Appeler le LLM pour générer une réponse avec les allergies
+    const response = await groqService.chat(message, conversationHistory, userAllergies);
     // Si la réponse contient une recette, extraire les informations
     if (response.containsRecipe) {
       const recipeData = response.recipeData;
       // Formater la recette pour l'utilisateur
-      const formattedMessage = `**${recipeData.name}**\n\n${recipeData.description}\n\n**Ingrédients :**\n${recipeData.ingredients.map((ing: any) => `- ${ing.quantity} ${ing.unit} ${ing.name}`.trim()).join('\n')}\n\n**Instructions :**\n${recipeData.instructions.map((step: string, i: number) => `${i + 1}. ${step}`).join('\n')}\n\n**Portions** : ${recipeData.servings}\n**Préparation** : ${recipeData.preparationTime} min\n**Cuisson** : ${recipeData.cookingTime} min\n**Difficulté** : ${recipeData.difficulty}\n**Catégorie** : ${recipeData.category}`;
+      const formattedMessage = formatRecipeWithMarkdown(recipeData);
       // Retourner la réponse formatée + les données pour le bouton
       return res.json({
         message: formattedMessage,
@@ -133,6 +218,26 @@ router.post('/create-recipe', authenticate, async (req, res) => {
   } catch (error) {
     console.error('Error creating recipe:', error);
     res.status(500).json({ error: 'Erreur lors de la création de la recette' });
+  }
+});
+
+// Analyser la nutrition d'une recette (nouvelle route simplifiée)
+router.post('/analyze-nutrition', authenticate, async (req, res) => {
+  try {
+    const { recipeName, ingredients } = req.body;
+    
+    if (!recipeName || !ingredients) {
+      res.status(400).json({ error: 'Nom de recette et ingrédients requis' });
+      return;
+    }
+
+    // Utiliser le service Groq pour analyser la nutrition
+    const analysis = await groqService.analyzeNutritionText(recipeName, ingredients);
+    
+    res.json({ analysis });
+  } catch (error) {
+    console.error('Error in nutrition analysis:', error);
+    res.status(500).json({ error: 'Erreur lors de l\'analyse nutritionnelle' });
   }
 });
 

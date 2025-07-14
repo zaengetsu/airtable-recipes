@@ -4,6 +4,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Recipe } from '@/types/recipe';
 import { RecipeCard } from './RecipeCard';
+import TypingIndicator from './TypingIndicator';
+import ReactMarkdown from 'react-markdown';
 
 interface Message {
   type: 'user' | 'assistant';
@@ -26,6 +28,28 @@ export default function ChatDrawer({ isOpen, onClose, recipeToAnalyze }: ChatDra
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { token } = useAuth();
 
+  // Charger les messages depuis le localStorage au montage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedMessages = localStorage.getItem('chatMessages');
+      if (savedMessages) {
+        try {
+          const parsedMessages = JSON.parse(savedMessages);
+          setMessages(parsedMessages);
+        } catch (error) {
+          console.error('Erreur lors du chargement des messages:', error);
+        }
+      }
+    }
+  }, []);
+
+  // Sauvegarder les messages dans le localStorage à chaque changement
+  useEffect(() => {
+    if (typeof window !== 'undefined' && messages.length > 0) {
+      localStorage.setItem('chatMessages', JSON.stringify(messages));
+    }
+  }, [messages]);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -38,25 +62,67 @@ export default function ChatDrawer({ isOpen, onClose, recipeToAnalyze }: ChatDra
       (async () => {
         setIsLoading(true);
         try {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ai/nutrition`, {
+          // Analyser la nutrition via le backend (comme le chat)
+          const ingredients = recipeToAnalyze.ingredients.map(ing => ing.name).join(', ');
+          
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/ai/analyze-nutrition`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({ recipe: recipeToAnalyze })
+            body: JSON.stringify({
+              recipeName: recipeToAnalyze.name,
+              ingredients: ingredients
+            })
           });
+
           if (!response.ok) throw new Error('Erreur lors de l\'analyse nutritionnelle');
           const data = await response.json();
           setAnalysisResult(data.analysis || 'Analyse nutritionnelle indisponible.');
         } catch (error) {
-          setAnalysisResult('Erreur lors de l\'analyse nutritionnelle.');
+          console.error('Erreur analyse nutritionnelle:', error);
+          
+          let errorMessage = 'Erreur lors de l\'analyse nutritionnelle.';
+          
+          if (error instanceof Error) {
+            if (error.message.includes('401') || error.message.includes('Unauthorized')) {
+              errorMessage = `## ❌ **Erreur d'authentification**
+
+La clé API Groq n'est pas valide ou a expiré.
+
+**Solutions :**
+1. Vérifiez votre clé API dans le fichier \`.env.local\`
+2. Assurez-vous que la clé commence par \`gsk_\`
+3. Régénérez une nouvelle clé sur https://console.groq.com/`;
+            } else if (error.message.includes('429') || error.message.includes('rate limit')) {
+              errorMessage = `## ⏱️ **Limite de requêtes atteinte**
+
+Vous avez atteint la limite de requêtes de l'API Groq.
+
+**Solutions :**
+1. Attendez quelques minutes avant de réessayer
+2. Vérifiez votre quota sur https://console.groq.com/
+3. Passez à un plan payant si nécessaire`;
+            } else if (error.message.includes('fetch')) {
+              errorMessage = `## 🌐 **Erreur de connexion**
+
+Impossible de se connecter à l'API Groq.
+
+**Solutions :**
+1. Vérifiez votre connexion internet
+2. Vérifiez que l'API Groq est accessible
+3. Réessayez dans quelques instants`;
+            }
+          }
+          
+          setAnalysisResult(errorMessage);
         } finally {
           setIsLoading(false);
         }
       })();
     }
-  }, [isOpen, recipeToAnalyze, token]);
+  }, [isOpen, recipeToAnalyze]);
 
   // Message d'accueil automatique à la première ouverture
   useEffect(() => {
@@ -85,7 +151,7 @@ export default function ChatDrawer({ isOpen, onClose, recipeToAnalyze }: ChatDra
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ai/chat`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/ai/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -121,7 +187,7 @@ export default function ChatDrawer({ isOpen, onClose, recipeToAnalyze }: ChatDra
 
   const handleCreateRecipe = async (recipeData: Recipe) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ai/create-recipe`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '/api'}/ai/create-recipe`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -145,6 +211,11 @@ export default function ChatDrawer({ isOpen, onClose, recipeToAnalyze }: ChatDra
     }
   };
 
+  const clearChatHistory = () => {
+    setMessages([]);
+    localStorage.removeItem('chatMessages');
+  };
+
   return (
     <>
       {/* Overlay */}
@@ -156,7 +227,7 @@ export default function ChatDrawer({ isOpen, onClose, recipeToAnalyze }: ChatDra
       )}
       {/* Drawer */}
       <div
-        className={`fixed right-0 top-0 h-full w-[700px] max-w-full bg-gradient-to-br from-white via-gray-50 to-gray-200 shadow-2xl rounded-l-3xl border-l border-gray-200 transform transition-transform duration-300 ease-in-out z-50 ${
+        className={`fixed right-0 top-0 h-full w-[700px] max-w-full bg-gradient-to-br from-white via-gray-50 to-gray-200 shadow-2xl rounded-l-3xl border-l border-gray-200 transform transition-transform duration-300 ease-in-out z-50 flex flex-col ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
@@ -166,15 +237,29 @@ export default function ChatDrawer({ isOpen, onClose, recipeToAnalyze }: ChatDra
             <img src="/aircooklogo.png" alt="AirCook Logo" className="h-10 w-auto" />
             Assistant Recettes
           </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-700 bg-gray-100 rounded-full p-2 transition-colors shadow"
-            aria-label="Fermer le chat"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          <div className="flex items-center gap-2">
+            {messages.length > 1 && (
+              <button
+                onClick={clearChatHistory}
+                className="text-gray-400 hover:text-red-500 bg-gray-100 rounded-full p-2 transition-colors shadow"
+                aria-label="Effacer l'historique"
+                title="Effacer l'historique"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-700 bg-gray-100 rounded-full p-2 transition-colors shadow"
+              aria-label="Fermer le chat"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
         {/* Card compacte de la recette à analyser */}
         {recipeToAnalyze && (
@@ -193,12 +278,42 @@ export default function ChatDrawer({ isOpen, onClose, recipeToAnalyze }: ChatDra
         )}
         {/* Résultat de l'analyse nutritionnelle */}
         {recipeToAnalyze && (
-          <div className="p-6">
+          <div className="flex-1 overflow-y-auto p-6">
             {isLoading ? (
               <div className="text-center text-gray-500">Analyse en cours...</div>
             ) : (
-              <div className="bg-gray-100 rounded-xl p-4 text-gray-900 whitespace-pre-line">
-                {analysisResult}
+              <div className="bg-gray-100 rounded-xl p-4 text-gray-900 max-w-none">
+                <ReactMarkdown 
+                  components={{
+                    h2: ({ children }) => (
+                      <h2 className="text-xl font-bold mb-2 mt-4">
+                        {children}
+                      </h2>
+                    ),
+                    strong: ({ children }) => (
+                      <strong className="font-semibold">
+                        {children}
+                      </strong>
+                    ),
+                    ul: ({ children }) => (
+                      <ul className="list-disc list-inside space-y-1 my-2">
+                        {children}
+                      </ul>
+                    ),
+                    ol: ({ children }) => (
+                      <ol className="list-decimal list-inside space-y-1 my-2">
+                        {children}
+                      </ol>
+                    ),
+                    p: ({ children }) => (
+                      <p className="mb-2">
+                        {children}
+                      </p>
+                    )
+                  }}
+                >
+                  {analysisResult}
+                </ReactMarkdown>
               </div>
             )}
           </div>
@@ -217,7 +332,54 @@ export default function ChatDrawer({ isOpen, onClose, recipeToAnalyze }: ChatDra
                       ? 'bg-black text-white rounded-2xl rounded-tr-none shadow-lg'
                       : 'bg-white/80 text-gray-900 rounded-2xl rounded-tl-none border border-gray-200 shadow'
                   } p-4`}> 
-                    <div className="whitespace-pre-wrap text-base leading-relaxed">{message.content}</div>
+                    <div className="text-base leading-relaxed">
+                      <ReactMarkdown 
+                        components={{
+                          table: ({ children }) => (
+                            <table className="w-full border-collapse border border-gray-300 my-4 bg-white">
+                              {children}
+                            </table>
+                          ),
+                        th: ({ children }) => (
+                          <th className="border border-gray-300 px-3 py-2 text-sm font-semibold bg-gray-50">
+                            {children}
+                          </th>
+                        ),
+                        td: ({ children }) => (
+                          <td className="border border-gray-300 px-3 py-2 text-sm">
+                            {children}
+                          </td>
+                        ),
+                        h2: ({ children }) => (
+                          <h2 className="text-xl font-bold mb-2 mt-4">
+                            {children}
+                          </h2>
+                        ),
+                        strong: ({ children }) => (
+                          <strong className="font-semibold">
+                            {children}
+                          </strong>
+                        ),
+                        em: ({ children }) => (
+                          <em className="italic">
+                            {children}
+                          </em>
+                        ),
+                        ul: ({ children }) => (
+                          <ul className="list-disc list-inside space-y-1 my-2">
+                            {children}
+                          </ul>
+                        ),
+                        ol: ({ children }) => (
+                          <ol className="list-decimal list-inside space-y-1 my-2">
+                            {children}
+                          </ol>
+                        )
+                      }}
+                    >
+                      {message.content}
+                    </ReactMarkdown>
+                    </div>
                     {message.recipes && message.recipes.map((recipe, idx) => (
                       <div key={idx} className="mt-4 bg-white rounded-xl p-4 shadow border border-gray-100">
                         <RecipeCard recipe={recipe} />
@@ -232,6 +394,7 @@ export default function ChatDrawer({ isOpen, onClose, recipeToAnalyze }: ChatDra
                   </div>
                 </div>
               ))}
+              {isLoading && <TypingIndicator isVisible={true} />}
               <div ref={messagesEndRef} />
             </div>
             {/* Input */}
