@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { 
   UsersIcon, 
   ExclamationTriangleIcon,
-  MagnifyingGlassIcon
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
@@ -26,7 +25,6 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     // Attendre que l'authentification soit chargée
@@ -69,12 +67,7 @@ export default function AdminUsersPage() {
     fetchUsers();
   }, [user, router, authLoading]);
 
-  // Filtrer les utilisateurs selon la recherche
-  const filteredUsers = users.filter(user =>
-    user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.role.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+
 
   // Afficher un loader pendant le chargement de l'authentification
   if (authLoading) {
@@ -120,19 +113,7 @@ export default function AdminUsersPage() {
             </div>
           </div>
 
-          {/* Barre de recherche */}
-          <div className="mb-6">
-            <div className="relative">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Rechercher par nom, email ou rôle..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-          </div>
+
 
           {/* Tableau */}
           {isLoading ? (
@@ -170,7 +151,7 @@ export default function AdminUsersPage() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredUsers.map((user) => (
+                    {users.map((user) => (
                       <tr key={user.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
@@ -226,14 +207,14 @@ export default function AdminUsersPage() {
                 </table>
               </div>
               
-              {filteredUsers.length === 0 && (
+              {users.length === 0 && (
                 <div className="text-center py-8">
                   <UsersIcon className="mx-auto h-12 w-12 text-gray-400" />
                   <h3 className="mt-2 text-sm font-medium text-gray-900">
-                    Aucun utilisateur trouvé
+                    Aucun utilisateur inscrit
                   </h3>
                   <p className="mt-1 text-sm text-gray-500">
-                    {searchTerm ? 'Essayez de modifier vos critères de recherche.' : 'Aucun utilisateur inscrit.'}
+                    Aucun utilisateur n'est inscrit pour le moment.
                   </p>
                 </div>
               )}

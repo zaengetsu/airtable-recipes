@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { 
   BookOpenIcon, 
   ExclamationTriangleIcon,
-  MagnifyingGlassIcon,
   ClockIcon,
   UserGroupIcon,
   FireIcon
@@ -41,7 +40,7 @@ export default function AdminRecipesPage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
+
 
   useEffect(() => {
     // Attendre que l'authentification soit chargée
@@ -80,13 +79,7 @@ export default function AdminRecipesPage() {
     fetchRecipes();
   }, [user, router, authLoading]);
 
-  // Filtrer les recettes selon la recherche
-  const filteredRecipes = recipes.filter(recipe =>
-    recipe.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    recipe.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    recipe.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    recipe.difficulty.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+
 
   // Afficher un loader pendant le chargement de l'authentification
   if (authLoading) {
@@ -132,19 +125,7 @@ export default function AdminRecipesPage() {
             </div>
           </div>
 
-          {/* Barre de recherche */}
-          <div className="mb-6">
-            <div className="relative">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Rechercher par nom, description, catégorie ou difficulté..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-          </div>
+
 
           {/* Tableau */}
           {isLoading ? (
@@ -188,7 +169,7 @@ export default function AdminRecipesPage() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredRecipes.map((recipe) => (
+                    {recipes.map((recipe) => (
                       <tr key={recipe.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
@@ -253,14 +234,14 @@ export default function AdminRecipesPage() {
                 </table>
               </div>
               
-              {filteredRecipes.length === 0 && (
+              {recipes.length === 0 && (
                 <div className="text-center py-8">
                   <BookOpenIcon className="mx-auto h-12 w-12 text-gray-400" />
                   <h3 className="mt-2 text-sm font-medium text-gray-900">
-                    Aucune recette trouvée
+                    Aucune recette créée
                   </h3>
                   <p className="mt-1 text-sm text-gray-500">
-                    {searchTerm ? 'Essayez de modifier vos critères de recherche.' : 'Aucune recette créée.'}
+                    Aucune recette n'est disponible pour le moment.
                   </p>
                 </div>
               )}
