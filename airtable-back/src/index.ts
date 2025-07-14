@@ -36,8 +36,4 @@ app.use((req: express.Request, res: express.Response) => {
 // Démarrage du serveur
 app.listen(PORT, () => {
   console.log(`Backend server is running on port ${PORT}`);
-  console.log('Configuration Airtable:', {
-    apiKey: process.env.AIRTABLE_API_KEY ? 'Présente' : 'Manquante',
-    baseId: process.env.AIRTABLE_BASE_ID ? 'Présent' : 'Manquant'
-  });
 });

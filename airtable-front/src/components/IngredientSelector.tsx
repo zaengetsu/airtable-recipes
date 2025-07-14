@@ -42,20 +42,16 @@ export default function IngredientSelector({
 
     setIsLoading(true);
     try {
-      console.log('Recherche d\'ingrédients pour:', query);
       const baseUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api').replace(/\/$/, '');
       const response = await fetch(`${baseUrl}/ingredients?search=${encodeURIComponent(query)}`);
-      console.log('Response status:', response.status);
       
       if (response.ok) {
         const data = await response.json();
-        console.log('Ingrédients trouvés:', data);
         
         // Filtrer les ingrédients déjà sélectionnés
         const filteredData = data.filter((ingredient: Ingredient) => 
           !selectedIngredients.some(selected => selected.name === ingredient.name)
         );
-        console.log('Ingrédients filtrés:', filteredData);
         setSuggestions(filteredData);
       } else {
         console.error('Erreur API:', response.status, response.statusText);

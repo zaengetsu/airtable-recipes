@@ -4,22 +4,44 @@ import ingredientRoutes from './ingredient.routes';
 import userRoutes from './user.routes';
 import aiRoutes from './ai.routes';
 import allergyRoutes from './allergy.routes';
+import nutritionalAnalysisRoutes from './nutritional-analysis.routes';
 
 const router = express.Router();
 
 // Routes pour les recettes
-router.use('/recipes', recipeRoutes);
+router.use(
+  '/recipes',
+  recipeRoutes
+);
 
 // Routes pour les ingrédients
-router.use('/ingredients', ingredientRoutes);
+router.use(
+  '/ingredients',
+  ingredientRoutes
+);
 
 // Routes pour les utilisateurs
-router.use('/users', userRoutes);
+router.use(
+  '/users',
+  userRoutes
+);
 
 // Routes pour l'IA
-router.use('/ai', aiRoutes);
+router.use(
+  '/ai',
+  aiRoutes
+);
 
 // Routes pour les allergies
-router.use('/allergies', allergyRoutes);
+router.use(
+  '/allergies',
+  allergyRoutes
+);
+
+// Routes pour l'analyse nutritionnelle
+router.use(
+  '/nutritional-analysis',
+  nutritionalAnalysisRoutes
+);
 
 export default router;   
