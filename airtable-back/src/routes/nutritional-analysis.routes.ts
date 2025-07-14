@@ -1,5 +1,5 @@
 import express from 'express';
-import { authenticate, authorize } from '../middleware/auth.middleware';
+import { authenticate, authorize, isAdmin } from '../middleware/auth.middleware';
 import { validateNutritionalAnalysis } from '../middleware/validation.middleware';
 import { NutritionalAnalysisController } from '../controllers';
 
@@ -33,7 +33,7 @@ router.put(
 router.delete(
   '/:analysisId',
   authenticate,
-  authorize(['admin']),
+  isAdmin,
   NutritionalAnalysisController.deleteNutritionalAnalysis
 );
 

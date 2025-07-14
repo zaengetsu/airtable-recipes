@@ -15,6 +15,12 @@ import {
   PuzzlePieceIcon
 } from '@heroicons/react/24/outline';
 
+// Fonction utilitaire pour gérer les pluriels automatiquement
+const pluralize = (count: number, singular: string, plural?: string) => {
+  const pluralForm = plural || singular + 's';
+  return count === 1 ? `${count} ${singular}` : `${count} ${pluralForm}`;
+};
+
 interface DashboardStats {
   totalUsers: number;
   totalRecipes: number;
@@ -71,6 +77,13 @@ export default function AdminDashboard() {
           users = await usersResponse.json();
         }
 
+        // Récupérer les ingrédients
+        const ingredientsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ingredients`);
+        let ingredients = [];
+        if (ingredientsResponse.ok) {
+          ingredients = await ingredientsResponse.json();
+        }
+
         // Calculer les recettes récentes (créées dans les 7 derniers jours)
         const oneWeekAgo = new Date();
         oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
@@ -83,7 +96,7 @@ export default function AdminDashboard() {
         setStats({
           totalUsers: users.filter((user: any) => user.role === 'user').length,
           totalRecipes: recipes.length,
-          totalIngredients: 0,
+          totalIngredients: ingredients.length,
           recentRecipes,
           isLoading: false,
           error: null
@@ -221,7 +234,7 @@ export default function AdminDashboard() {
                       Consultez et gérez les comptes clients et leurs profils
                     </p>
                     <div className="flex items-center text-sm text-blue-600 font-medium">
-                      <span>{stats.totalUsers} client(s)</span>
+                      <span>{pluralize(stats.totalUsers, 'client')}</span>
                     </div>
                   </div>
                 </Link>
@@ -245,7 +258,7 @@ export default function AdminDashboard() {
                       Consultez toutes les recettes créées et gérez leur visibilité
                     </p>
                     <div className="flex items-center text-sm text-green-600 font-medium">
-                      <span>{stats.totalRecipes} recette(s)</span>
+                      <span>{pluralize(stats.totalRecipes, 'recette')}</span>
                     </div>
                   </div>
                 </Link>
@@ -269,7 +282,7 @@ export default function AdminDashboard() {
                       Consultez la base de données des ingrédients et leurs propriétés
                     </p>
                     <div className="flex items-center text-sm text-purple-600 font-medium">
-                      <span>Base de données</span>
+                      <span>{pluralize(stats.totalIngredients, 'ingrédient')}</span>
                     </div>
                   </div>
                 </Link>

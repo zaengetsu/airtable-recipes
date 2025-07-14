@@ -1,5 +1,5 @@
 import express from 'express';
-import { authenticate, authorize } from '../middleware/auth.middleware';
+import { authenticate, isAdmin } from '../middleware/auth.middleware';
 import { UserController, AuthController } from '../controllers';
 
 const router = express.Router();
@@ -38,7 +38,7 @@ router.put(
 router.get(
   '/',
   authenticate,
-  authorize(['admin']),
+  isAdmin,
   UserController.getAllUsers
 );
 

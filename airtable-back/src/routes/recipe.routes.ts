@@ -1,5 +1,5 @@
 import express from 'express';
-import { authenticate } from '../middleware/auth.middleware';
+import { authenticate, isAdmin } from '../middleware/auth.middleware';
 import { validateRecipe } from '../middleware/validation.middleware';
 import { RecipeController } from '../controllers';
 
@@ -30,6 +30,14 @@ router.put(
   '/:id',
   authenticate,
   validateRecipe,
+  RecipeController.updateRecipe
+);
+
+// Mettre à jour partiellement une recette (pour admin)
+router.patch(
+  '/:id',
+  authenticate,
+  isAdmin,
   RecipeController.updateRecipe
 );
 

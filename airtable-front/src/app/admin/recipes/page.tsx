@@ -8,7 +8,10 @@ import {
   ExclamationTriangleIcon,
   ClockIcon,
   UserGroupIcon,
-  ArrowLeftIcon
+  ArrowLeftIcon,
+  EllipsisVerticalIcon,
+  EyeIcon,
+  EyeSlashIcon
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
@@ -40,6 +43,53 @@ export default function AdminRecipesPage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [loadingActions, setLoadingActions] = useState<Set<string>>(new Set());
+
+  // Fonction pour basculer la visibilité d'une recette
+  const toggleRecipeVisibility = async (recipeId: string, newVisibility: boolean) => {
+    try {
+      // Ajouter le loader
+      setLoadingActions(prev => new Set(prev).add(recipeId));
+      
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Token d\'authentification manquant');
+      }
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/recipes/${recipeId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ isPublic: newVisibility }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la mise à jour de la recette');
+      }
+
+      // Mettre à jour l'état local
+      setRecipes(prevRecipes => 
+        prevRecipes.map(recipe => 
+          recipe.id === recipeId 
+            ? { ...recipe, isPublic: newVisibility }
+            : recipe
+        )
+      );
+    } catch (error) {
+      console.error('Erreur:', error);
+      setError('Erreur lors de la mise à jour de la recette');
+    } finally {
+      // Retirer le loader
+      setLoadingActions(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(recipeId);
+        return newSet;
+      });
+    }
+  };
 
 
   useEffect(() => {
@@ -78,6 +128,20 @@ export default function AdminRecipesPage() {
 
     fetchRecipes();
   }, [user, router, authLoading]);
+
+  // Fermer le menu quand on clique ailleurs
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (openMenu && !(event.target as Element).closest('.menu-container')) {
+        setOpenMenu(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [openMenu]);
 
 
 
@@ -166,6 +230,9 @@ export default function AdminRecipesPage() {
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Créée le
                       </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -220,13 +287,68 @@ export default function AdminRecipesPage() {
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                             recipe.isPublic 
                               ? 'bg-green-100 text-green-800' 
-                              : 'bg-gray-100 text-gray-800'
+                              : 'bg-red-100 text-red-800'
                           }`}>
                             {recipe.isPublic ? 'Public' : 'Privé'}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {new Date(recipe.createdAt).toLocaleDateString('fr-FR')}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap relative">
+                          <div className="relative menu-container">
+                            <button
+                              onClick={() => setOpenMenu(openMenu === recipe.id ? null : recipe.id)}
+                              disabled={loadingActions.has(recipe.id)}
+                              className={`p-2 rounded-lg transition-colors ${
+                                loadingActions.has(recipe.id)
+                                  ? 'cursor-not-allowed'
+                                  : 'hover:bg-gray-100'
+                              }`}
+                            >
+                              {loadingActions.has(recipe.id) ? (
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                              ) : (
+                                <EllipsisVerticalIcon className="h-5 w-5 text-gray-400" />
+                              )}
+                            </button>
+                            
+                            {openMenu === recipe.id && (
+                              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-10">
+                                <div className="py-1">
+                                  <button
+                                    onClick={() => {
+                                      toggleRecipeVisibility(recipe.id, !recipe.isPublic);
+                                      setOpenMenu(null);
+                                    }}
+                                    disabled={loadingActions.has(recipe.id)}
+                                    className={`flex items-center w-full px-4 py-2 text-sm transition-colors ${
+                                      loadingActions.has(recipe.id)
+                                        ? 'text-gray-400 cursor-not-allowed'
+                                        : 'text-gray-700 hover:bg-gray-100'
+                                    }`}
+                                  >
+                                    {loadingActions.has(recipe.id) ? (
+                                      <>
+                                        <div className="animate-spin rounded-full h-4 w-4 mr-3 border-b-2 border-gray-400"></div>
+                                        Mise à jour...
+                                      </>
+                                    ) : recipe.isPublic ? (
+                                      <>
+                                        <EyeSlashIcon className="h-4 w-4 mr-3 text-red-500" />
+                                        Rendre privé
+                                      </>
+                                    ) : (
+                                      <>
+                                        <EyeIcon className="h-4 w-4 mr-3 text-green-500" />
+                                        Rendre public
+                                      </>
+                                    )}
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))}

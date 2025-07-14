@@ -42,4 +42,16 @@ export const authorize = (roles: string[]) => {
 
     next();
   };
+};
+
+export const isAdmin = (req: Request, res: Response, next: NextFunction) => {
+  if (!req.user) {
+    throw new UnauthorizedError('Utilisateur non authentifié');
+  }
+
+  if (req.user.role !== 'admin') {
+    throw new ForbiddenError('Accès réservé aux administrateurs');
+  }
+
+  next();
 }; 
