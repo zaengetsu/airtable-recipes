@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import { authenticate, authorize } from '../middleware/auth.middleware';
-import { airtableService } from './../lib/airtable.service'
+import { userService } from '../services';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { CustomJwtPayload } from '../types/auth';
@@ -14,7 +14,7 @@ router.post('/register', async (req: Request, res: Response, next) => {
     const { username, email, password, role = 'user' } = req.body;
 
     // Vérifier si l'utilisateur existe déjà
-    const existingUser = await airtableService.getUserByEmail(email);
+    const existingUser = await userService.getUserByEmail(email);
     if (existingUser) {
       res.status(400).json({ message: 'Cet email est déjà utilisé' });
       return;
@@ -24,7 +24,7 @@ router.post('/register', async (req: Request, res: Response, next) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Créer l'utilisateur
-    const user = await airtableService.createUser({
+    const user = await userService.createUser({
       username,
       email,
       password: hashedPassword,
@@ -60,7 +60,7 @@ router.post('/login', async (req: Request, res: Response, next) => {
     const { email, password } = req.body;
 
     // Vérifier si l'utilisateur existe
-    const user = await airtableService.getUserByEmail(email);
+    const user = await userService.getUserByEmail(email);
     if (!user) {
       res.status(401).json({ message: 'Email ou mot de passe incorrect' });
       return;
@@ -102,7 +102,7 @@ router.get('/profile', authenticate, async (req: Request, res: Response) => {
       return res.status(401).json({ message: 'Non autorisé' });
     }
 
-    const user = await airtableService.getUserById(req.user.id);
+    const user = await userService.getUserById(req.user.id);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -131,7 +131,7 @@ router.put('/profile', authenticate, async (req: Request, res: Response) => {
     const { username, allergies } = req.body;
     console.log('Updating user with data:', { username, allergies });
     
-    const user = await airtableService.updateUser(req.user.id, {
+    const user = await userService.updateUser(req.user.id, {
       username,
       allergies,
     });
@@ -155,7 +155,7 @@ router.put('/password', authenticate, async (req: Request, res: Response) => {
     }
 
     const { currentPassword, newPassword } = req.body;
-    const user = await airtableService.getUserById(req.user.id);
+    const user = await userService.getUserById(req.user.id);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -170,7 +170,7 @@ router.put('/password', authenticate, async (req: Request, res: Response) => {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     // Mettre à jour le mot de passe
-    await airtableService.updateUser(req.user.id, {
+    await userService.updateUser(req.user.id, {
       password: hashedPassword
     });
 
@@ -184,7 +184,7 @@ router.put('/password', authenticate, async (req: Request, res: Response) => {
 // Get all users (admin only)
 router.get('/', authenticate, authorize(['admin']), async (req: Request, res: Response) => {
   try {
-    const users = await airtableService.getAllUsers();
+    const users = await userService.getAllUsers();
     
     const usersWithoutPassword = users.map((user: AirtableUser) => {
       const { password, ...userWithoutPassword } = user;

@@ -22,7 +22,7 @@ interface DashboardStats {
 }
 
 export default function AdminDashboard() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const [stats, setStats] = useState<DashboardStats>({
     totalUsers: 0,
@@ -34,6 +34,11 @@ export default function AdminDashboard() {
   });
 
   useEffect(() => {
+    // Attendre que l'authentification soit chargée
+    if (authLoading) {
+      return;
+    }
+
     // Vérifier si l'utilisateur est admin
     if (!user || user.role !== 'admin') {
       router.push('/');
@@ -93,8 +98,24 @@ export default function AdminDashboard() {
     };
 
     fetchStats();
-  }, [user, router]);
+  }, [user, router, authLoading]);
 
+  // Afficher un loader pendant le chargement de l'authentification
+  if (authLoading) {
+    return (
+      <div className="bg-gray-50">
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Rediriger si pas admin
   if (!user || user.role !== 'admin') {
     return null;
   }
@@ -191,17 +212,20 @@ export default function AdminDashboard() {
                 href="/admin/users"
                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors text-center"
               >
-                Gérer les utilisateurs
+                Voir les utilisateurs
               </Link>
               <Link
                 href="/admin/recipes"
                 className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors text-center"
               >
-                Modérer les recettes
+                Voir les recettes
               </Link>
-              <button className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors">
-                Voir les logs
-              </button>
+              <Link
+                href="/admin/ingredients"
+                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors text-center"
+              >
+                Voir les ingrédients
+              </Link>
             </div>
           </div>
         </div>

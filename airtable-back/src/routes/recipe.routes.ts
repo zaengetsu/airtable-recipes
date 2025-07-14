@@ -1,14 +1,14 @@
 import express from 'express';
 import { authenticate, authorize } from '../middleware/auth.middleware';
 import { validateRecipe } from '../middleware/validation.middleware';
-import { airtableService } from '../lib/airtable.service';
+import { recipeService } from '../services';
 
 const router = express.Router();
 
 // Obtenir toutes les recettes
 router.get('/', async (req, res, next) => {
   try {
-    const recipes = await airtableService.getAllRecipes();
+    const recipes = await recipeService.getAllRecipes();
     res.json(recipes);
   } catch (error) {
     next(error);
@@ -18,7 +18,7 @@ router.get('/', async (req, res, next) => {
 // Obtenir une recette par son ID
 router.get('/:id', async (req, res, next) => {
   try {
-    const recipe = await airtableService.getRecipeById(req.params.id);
+    const recipe = await recipeService.getRecipeById(req.params.id);
     if (!recipe) {
       res.status(404).json({ message: 'Recette non trouvée' });
       return;
@@ -43,7 +43,7 @@ router.post('/', authenticate, validateRecipe, async (req, res, next) => {
     
     console.log('Recipe data to create:', JSON.stringify(recipeData, null, 2));
     
-    const recipe = await airtableService.createRecipe(recipeData);
+    const recipe = await recipeService.createRecipe(recipeData);
     console.log('Recipe created successfully:', recipe.id);
     res.status(201).json(recipe);
   } catch (error) {
@@ -55,7 +55,7 @@ router.post('/', authenticate, validateRecipe, async (req, res, next) => {
 // Mettre à jour une recette
 router.put('/:id', authenticate, validateRecipe, async (req, res, next) => {
   try {
-    const recipe = await airtableService.getRecipeById(req.params.id);
+    const recipe = await recipeService.getRecipeById(req.params.id);
     if (!recipe) {
       res.status(404).json({ message: 'Recette non trouvée' });
       return;
@@ -67,7 +67,7 @@ router.put('/:id', authenticate, validateRecipe, async (req, res, next) => {
       return;
     }
 
-    const updatedRecipe = await airtableService.updateRecipe(req.params.id, req.body);
+    const updatedRecipe = await recipeService.updateRecipe(req.params.id, req.body);
     res.json(updatedRecipe);
   } catch (error) {
     next(error);
@@ -77,7 +77,7 @@ router.put('/:id', authenticate, validateRecipe, async (req, res, next) => {
 // Supprimer une recette
 router.delete('/:id', authenticate, async (req, res, next) => {
   try {
-    const recipe = await airtableService.getRecipeById(req.params.id);
+    const recipe = await recipeService.getRecipeById(req.params.id);
     if (!recipe) {
       res.status(404).json({ message: 'Recette non trouvée' });
       return;
@@ -89,7 +89,7 @@ router.delete('/:id', authenticate, async (req, res, next) => {
       return;
     }
 
-    await airtableService.deleteRecipe(req.params.id);
+    await recipeService.deleteRecipe(req.params.id);
     res.status(204).send();
   } catch (error) {
     next(error);
@@ -99,7 +99,7 @@ router.delete('/:id', authenticate, async (req, res, next) => {
 // Rechercher des recettes
 router.get('/search/:query', async (req, res, next) => {
   try {
-    const recipes = await airtableService.searchRecipes(req.params.query);
+    const recipes = await recipeService.searchRecipes(req.params.query);
     res.json(recipes);
   } catch (error) {
     next(error);
@@ -109,7 +109,7 @@ router.get('/search/:query', async (req, res, next) => {
 // Obtenir les recettes par catégorie
 router.get('/category/:category', async (req, res, next) => {
   try {
-    const recipes = await airtableService.getRecipesByCategory(req.params.category);
+    const recipes = await recipeService.getRecipesByCategory(req.params.category);
     res.json(recipes);
   } catch (error) {
     next(error);
@@ -119,7 +119,7 @@ router.get('/category/:category', async (req, res, next) => {
 // Obtenir les recettes par difficulté
 router.get('/difficulty/:difficulty', async (req, res, next) => {
   try {
-    const recipes = await airtableService.getRecipesByDifficulty(req.params.difficulty);
+    const recipes = await recipeService.getRecipesByDifficulty(req.params.difficulty);
     res.json(recipes);
   } catch (error) {
     next(error);

@@ -1,5 +1,5 @@
 import express from 'express';
-import { airtableService } from '../lib/airtable.service';
+import { allergyService } from '../services';
 
 const router = express.Router();
 
@@ -10,14 +10,14 @@ router.get('/', async (req, res, next) => {
     
     if (search && typeof search === 'string') {
       // Recherche par nom d'allergie
-      const allAllergies = await airtableService.getAllAllergies();
+      const allAllergies = await allergyService.getAllAllergies();
       const filteredAllergies = allAllergies.filter(allergy =>
         allergy.name.toLowerCase().includes(search.toLowerCase())
       );
       res.json(filteredAllergies);
     } else {
       // Retourner toutes les allergies
-      const allergies = await airtableService.getAllAllergies();
+      const allergies = await allergyService.getAllAllergies();
       res.json(allergies);
     }
   } catch (error) {
@@ -28,7 +28,7 @@ router.get('/', async (req, res, next) => {
 // Obtenir une allergie par ID
 router.get('/:id', async (req, res, next) => {
   try {
-    const allergy = await airtableService.getAllergyById(req.params.id);
+    const allergy = await allergyService.getAllergyById(req.params.id);
     if (!allergy) {
       res.status(404).json({ message: 'Allergie non trouvée' });
       return;

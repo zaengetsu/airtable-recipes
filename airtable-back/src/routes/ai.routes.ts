@@ -1,6 +1,9 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware';
-import { airtableService } from '../lib/airtable.service';
+import { recipeService } from '../services/recipe.service';
+import { ingredientService } from '../services/ingredient.service';
+import { userService } from '../services/user.service';
+import { nutritionalAnalysisService } from '../services/nutritionalAnalysis.service';
 import { GroqService } from '../lib/groq.service';
 
 const router = express.Router();
@@ -61,7 +64,7 @@ function formatRecipeWithMarkdown(recipeData: any): string {
 // Analyser la nutrition d'une recette
 router.post('/analyze-nutrition/:recipeId', authenticate, async (req, res, next) => {
   try {
-    const recipe = await airtableService.getRecipeById(req.params.recipeId);
+    const recipe = await recipeService.getRecipeById(req.params.recipeId);
     if (!recipe) {
       res.status(404).json({ message: 'Recette non trouvée' });
       return;
@@ -73,7 +76,7 @@ router.post('/analyze-nutrition/:recipeId', authenticate, async (req, res, next)
       : [];
     const ingredients = await Promise.all(
       ingredientNames.map(async (ingredientName: string) => {
-        const ingredient = await airtableService.getIngredientByName(ingredientName);
+        const ingredient = await ingredientService.getIngredientByName(ingredientName);
         if (!ingredient) {
           throw new Error(`Ingrédient non trouvé: ${ingredientName}`);
         }
@@ -105,7 +108,7 @@ ${analysis.allergens.length > 0 ? analysis.allergens.map(allergen => `• ${alle
     `.trim();
 
     // Sauvegarder l'analyse dans Airtable
-    const savedAnalysis = await airtableService.createNutritionalAnalysis({
+    const savedAnalysis = await nutritionalAnalysisService.createNutritionalAnalysis({
       recipeID: req.params.recipeId,
       ...analysis
     });
@@ -130,13 +133,13 @@ router.post('/generate-recipe', authenticate, async (req, res, next) => {
 
     // Récupérer les allergies de l'utilisateur
     const userId = req.user?.id || '';
-    const user = await airtableService.getUserById(userId);
+    const user = await userService.getUserById(userId);
     const userAllergies = user?.allergies || [];
 
     // Récupérer les détails des ingrédients
     const ingredientDetails = await Promise.all(
       ingredients.map(async (ingredientName: string) => {
-        const ingredient = await airtableService.getIngredientByName(ingredientName);
+        const ingredient = await ingredientService.getIngredientByName(ingredientName);
         if (!ingredient) {
           throw new Error(`Ingrédient non trouvé: ${ingredientName}`);
         }
@@ -156,7 +159,7 @@ router.post('/generate-recipe', authenticate, async (req, res, next) => {
     }));
 
     // Sauvegarder la recette dans Airtable
-    const savedRecipe = await airtableService.createRecipe({
+    const savedRecipe = await recipeService.createRecipe({
       ...generatedRecipe,
       ingredients: formattedIngredients,
       instructions: typeof generatedRecipe.instructions === 'string' ? generatedRecipe.instructions.split('\n') : generatedRecipe.instructions,
@@ -176,7 +179,7 @@ router.post('/chat', authenticate, async (req, res) => {
     const userId = req.user?.id || '';
 
     // Récupérer les allergies de l'utilisateur
-    const user = await airtableService.getUserById(userId);
+    const user = await userService.getUserById(userId);
     const userAllergies = user?.allergies || [];
 
     // Appeler le LLM pour générer une réponse avec les allergies
@@ -210,7 +213,7 @@ router.post('/create-recipe', authenticate, async (req, res) => {
     const { recipeData } = req.body;
     const userId = req.user?.id || '';
     // Créer la recette dans Airtable
-    const recipe = await airtableService.createRecipe({
+    const recipe = await recipeService.createRecipe({
       ...recipeData,
       authorID: "chef"
     });

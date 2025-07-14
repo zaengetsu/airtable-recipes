@@ -21,7 +21,7 @@ interface User {
 }
 
 export default function AdminUsersPage() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,6 +29,11 @@ export default function AdminUsersPage() {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
+    // Attendre que l'authentification soit chargée
+    if (authLoading) {
+      return;
+    }
+
     // Vérifier si l'utilisateur est admin
     if (!user || user.role !== 'admin') {
       router.push('/');
@@ -62,7 +67,7 @@ export default function AdminUsersPage() {
     };
 
     fetchUsers();
-  }, [user, router]);
+  }, [user, router, authLoading]);
 
   // Filtrer les utilisateurs selon la recherche
   const filteredUsers = users.filter(user =>
@@ -71,6 +76,22 @@ export default function AdminUsersPage() {
     user.role.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Afficher un loader pendant le chargement de l'authentification
+  if (authLoading) {
+    return (
+      <div className="bg-gray-50">
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Rediriger si pas admin
   if (!user || user.role !== 'admin') {
     return null;
   }

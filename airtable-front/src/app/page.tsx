@@ -130,7 +130,7 @@ export default function Home() {
               >
                 Créer ma recette
               </button>
-              <a href="#recettes" className="text-sm font-semibold leading-6 text-black hover:text-gray-800">
+              <a href="#recettes" className="text-sm font-semibold leading-6 text-white hover:underline">
                 Voir les recettes <span aria-hidden="true">→</span>
               </a>
             </div>
