@@ -118,15 +118,24 @@ router.get('/profile', authenticate, async (req: Request, res: Response) => {
 // Update user profile
 router.put('/profile', authenticate, async (req: Request, res: Response) => {
   try {
+    console.log('=== MISE À JOUR PROFIL UTILISATEUR ===');
+    console.log('User:', req.user);
+    console.log('Body:', JSON.stringify(req.body, null, 2));
+    
     if (!req.user?.id) {
+      console.log('No user ID found');
       return res.status(401).json({ message: 'Non autorisé' });
     }
 
     const { username, allergies } = req.body;
+    console.log('Updating user with data:', { username, allergies });
+    
     const user = await airtableService.updateUser(req.user.id, {
       username,
       allergies,
     });
+
+    console.log('User updated successfully:', user.id);
 
     // Remove sensitive data
     const { password, ...userWithoutPassword } = user;

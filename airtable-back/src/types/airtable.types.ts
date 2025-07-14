@@ -80,6 +80,7 @@ export interface AirtableAllergy {
   id: string;
   name: string;
   description: string;
+  keywords?: string[];
   createdAt: string;
   updatedAt: string;
 } 

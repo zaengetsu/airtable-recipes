@@ -32,12 +32,22 @@ router.get('/:id', async (req, res, next) => {
 // Créer une nouvelle recette
 router.post('/', authenticate, validateRecipe, async (req, res, next) => {
   try {
-    const recipe = await airtableService.createRecipe({
+    console.log('=== CRÉATION DE RECETTE ===');
+    console.log('User:', req.user);
+    console.log('Body:', JSON.stringify(req.body, null, 2));
+    
+    const recipeData = {
       ...req.body,
-      authorID: req.user?.userId
-    });
+      authorID: req.user?.id
+    };
+    
+    console.log('Recipe data to create:', JSON.stringify(recipeData, null, 2));
+    
+    const recipe = await airtableService.createRecipe(recipeData);
+    console.log('Recipe created successfully:', recipe.id);
     res.status(201).json(recipe);
   } catch (error) {
+    console.error('Error creating recipe:', error);
     next(error);
   }
 });

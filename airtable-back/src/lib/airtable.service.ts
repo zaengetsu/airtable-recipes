@@ -107,6 +107,9 @@ export const airtableService = {
 
   async createRecipe(recipe: Omit<AirtableRecipe, 'id' | 'createdAt' | 'updatedAt' | 'likes'>): Promise<AirtableRecipe> {
     try {
+      console.log('=== AIRTABLE CREATE RECIPE ===');
+      console.log('Recipe data received:', JSON.stringify(recipe, null, 2));
+      
       const record = await base('Recipes').create({
         name: recipe.name,
         description: recipe.description,
@@ -125,7 +128,10 @@ export const airtableService = {
         likes: 0,
         nutritionalAnalysis: recipe.nutritionalAnalysis ? JSON.stringify(recipe.nutritionalAnalysis) : undefined,
       });
-      return {
+      
+      console.log('Airtable record created:', record.id);
+      
+      const createdRecipe = {
         id: record.id,
         name: record.get('name') as string,
         description: record.get('description') as string,
@@ -144,7 +150,11 @@ export const airtableService = {
         likes: record.get('likes') as number,
         nutritionalAnalysis: record.get('nutritionalAnalysis') ? JSON.parse(record.get('nutritionalAnalysis') as string) : undefined,
       };
+      
+      console.log('Recipe object created:', createdRecipe.id);
+      return createdRecipe;
     } catch (error) {
+      console.error('Airtable createRecipe error:', error);
       throw new AirtableError('Erreur lors de la création de la recette');
     }
   },
@@ -386,11 +396,31 @@ export const airtableService = {
         id: record.id,
         name: record.get('name') as string,
         description: record.get('description') as string,
+        keywords: record.get('keywords') ? JSON.parse(record.get('keywords') as string) : [],
         createdAt: record.get('createdAt') as string,
         updatedAt: record.get('updatedAt') as string,
       }));
     } catch (error) {
       throw new AirtableError('Erreur lors de la récupération des allergies');
+    }
+  },
+
+  async getAllergyById(id: string): Promise<AirtableAllergy | null> {
+    try {
+      const record = await base('Allergies').find(id);
+      return {
+        id: record.id,
+        name: record.get('name') as string,
+        description: record.get('description') as string,
+        keywords: record.get('keywords') ? JSON.parse(record.get('keywords') as string) : [],
+        createdAt: record.get('createdAt') as string,
+        updatedAt: record.get('updatedAt') as string,
+      };
+    } catch (error) {
+      if ((error as any).error === 'NOT_FOUND') {
+        return null;
+      }
+      throw new AirtableError('Erreur lors de la récupération de l\'allergie');
     }
   },
 
