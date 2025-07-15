@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { ArrowLeftIcon, HeartIcon, ClockIcon, UserGroupIcon, FireIcon } from '@heroicons/react/24/outline';
+import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import AllergyAlert from '@/components/AllergyAlert';
@@ -44,7 +45,6 @@ const PLACEHOLDER_IMAGES = [
   'https://placehold.co/400x300/3357FF/FFFFFF/png?text=Recette+3',
 ];
 
-// Fonction pour obtenir les couleurs selon la catégorie
 const getCategoryColors = (category: string) => {
   const categoryLower = category.toLowerCase();
   
@@ -85,6 +85,11 @@ export default function RecipePage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [recipeToAnalyze, setRecipeToAnalyze] = useState<Recipe | null>(null);
+  
+  const [likesCount, setLikesCount] = useState(0);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isLikingLoading, setIsLikingLoading] = useState(false);
+  
   const { user } = useAuth();
 
   useEffect(() => {
@@ -102,6 +107,7 @@ export default function RecipePage() {
 
         const data = await response.json();
         setRecipe(data);
+        setLikesCount(data.likes || 0);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Erreur lors du chargement de la recette');
       } finally {
@@ -112,7 +118,68 @@ export default function RecipePage() {
     fetchRecipe();
   }, [params.id]);
 
-  // Écouter l'événement pour ouvrir le drawer d'analyse nutritionnelle
+  useEffect(() => {
+    const loadLikeStatus = async () => {
+      if (user?.id && params.id) {
+        try {
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/recipes/${params.id}/like-status`,
+            {
+              headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+              }
+            }
+          );
+          
+          if (response.ok) {
+            const { liked } = await response.json();
+            setIsLiked(liked);
+          }
+        } catch (error) {
+          console.error('Erreur lors du chargement du statut de like:', error);
+        }
+      }
+    };
+
+    loadLikeStatus();
+  }, [user?.id, params.id]);
+
+  const handleLikeToggle = async () => {
+    if (!user?.id) {
+      alert('Vous devez être connecté pour liker une recette');
+      return;
+    }
+
+    if (!params.id) return;
+
+    setIsLikingLoading(true);
+    
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/recipes/${params.id}/like`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.ok) {
+        const { liked, likesCount: newLikesCount } = await response.json();
+        setIsLiked(liked);
+        setLikesCount(newLikesCount);
+      } else {
+        console.error('Erreur lors du toggle du like');
+      }
+    } catch (error) {
+      console.error('Erreur lors du toggle du like:', error);
+    } finally {
+      setIsLikingLoading(false);
+    }
+  };
+
   useEffect(() => {
     const handleOpenNutritionAnalysis = (event: CustomEvent) => {
       setRecipeToAnalyze(event.detail.recipe);
@@ -163,13 +230,11 @@ export default function RecipePage() {
     );
   }
 
-  // Extraire les noms d'ingrédients pour la vérification d'allergies
   const ingredientNames = recipe.ingredients.map(ing => ing.name || ing.toString());
   const categoryColors = getCategoryColors(recipe.category);
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Simple back link */}
       <div className="max-w-4xl mx-auto px-4 py-4">
         <Link
           href="/"
@@ -180,9 +245,7 @@ export default function RecipePage() {
         </Link>
       </div>
 
-      {/* Recipe Content */}
       <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Recipe Header */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
@@ -190,9 +253,17 @@ export default function RecipePage() {
               <p className="text-gray-600 mb-4">{recipe.description}</p>
             </div>
             
-            <div className="ml-6 bg-white/90 rounded-full p-1">
-              <HeartIcon className="h-6 w-6 text-red-500" />
-            </div>
+            <button
+              onClick={handleLikeToggle}
+              disabled={isLikingLoading}
+              className="ml-6 bg-white/90 rounded-full p-1 hover:bg-white transition-colors disabled:opacity-50"
+            >
+              {isLiked ? (
+                <HeartIconSolid className="h-6 w-6 text-red-500" />
+              ) : (
+                <HeartIcon className="h-6 w-6 text-red-500" />
+              )}
+            </button>
           </div>
           
           <div className="text-xs text-gray-400">
@@ -200,7 +271,6 @@ export default function RecipePage() {
           </div>
         </div>
 
-        {/* Image Carousel */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <div className="relative aspect-w-16 aspect-h-9 rounded-xl overflow-hidden">
             <img
@@ -227,7 +297,6 @@ export default function RecipePage() {
           </div>
         </div>
 
-        {/* Recipe Info */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <div className="grid grid-cols-3 gap-4 bg-gray-50 p-4 rounded-xl">
             <div className="flex items-center space-x-2">
@@ -243,15 +312,14 @@ export default function RecipePage() {
               </span>
             </div>
             <div className="flex items-center space-x-2">
-              <HeartIcon className="h-5 w-5 text-indigo-500" />
+              <HeartIcon className="h-5 w-5 text-red-500" />
               <span className="text-sm text-gray-600">
-                {recipe.likes || 0} likes
+                {likesCount} like{likesCount > 1 ? 's' : ''}
               </span>
             </div>
           </div>
         </div>
 
-        {/* Alerte d'allergies */}
         {user && user.allergies && user.allergies.length > 0 && (
           <div className="mb-6">
             <AllergyAlert
@@ -261,11 +329,9 @@ export default function RecipePage() {
           </div>
         )}
 
-        {/* Bouton Analyse nutritionnelle */}
         <div className="mb-6">
           <button
             onClick={() => {
-              // Ouvrir le drawer d'analyse nutritionnelle directement
               const event = new CustomEvent('openNutritionAnalysis', {
                 detail: { recipe }
               });
@@ -277,14 +343,12 @@ export default function RecipePage() {
           </button>
         </div>
 
-        {/* Description */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Description</h3>
           <p className="text-gray-600">{recipe.description}</p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
-          {/* Ingredients */}
           <div className="bg-white rounded-lg shadow-sm p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Ingrédients</h3>
             <ul className="grid grid-cols-1 gap-2">
@@ -301,7 +365,6 @@ export default function RecipePage() {
             </ul>
           </div>
 
-          {/* Instructions */}
           <div className="bg-white rounded-lg shadow-sm p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Instructions</h3>
             <ol className="space-y-4">
@@ -317,7 +380,6 @@ export default function RecipePage() {
           </div>
         </div>
 
-        {/* Additional Info */}
         <div className="bg-white rounded-lg shadow-sm p-6 mt-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
@@ -332,7 +394,6 @@ export default function RecipePage() {
         </div>
       </div>
 
-      {/* ChatDrawer pour l'analyse nutritionnelle */}
       <ChatDrawer
         isOpen={isChatOpen}
         onClose={() => setIsChatOpen(false)}
@@ -340,4 +401,4 @@ export default function RecipePage() {
       />
     </div>
   );
-} 
+}

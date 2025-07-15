@@ -264,4 +264,57 @@ export const recipeService = {
       throw error;
     }
   },
+  
+    async toggleLike(recipeId: string, userId: string): Promise<{ liked: boolean, likesCount: number }> {
+    try {
+      const record = await tables.recipes.find(recipeId);
+      const currentLikedBy = record.get('likedBy') as string[] || [];
+
+      let newLikedBy: string[];
+      let liked: boolean;
+
+      if (currentLikedBy.includes(userId)) {
+        newLikedBy = currentLikedBy.filter(id => id !== userId);
+        liked = false;
+      } else {
+        // Ajouter le like
+        newLikedBy = [...currentLikedBy, userId];
+        liked = true;
+      }
+
+      const updatedRecord = await tables.recipes.update(recipeId, {
+        likedBy: newLikedBy,
+        updatedAt: new Date().toISOString()
+      });
+
+      const likesCount = updatedRecord.get('likes') as number || newLikedBy.length;
+
+      return { liked, likesCount };
+    } catch (error) {
+      console.error('Erreur toggle like:', error);
+      throw new AirtableError('Erreur lors de la mise à jour du like');
+    }
+  },
+
+    async getUserLikeStatus(recipeId: string, userId: string): Promise<boolean> {
+    try {
+      const record = await tables.recipes.find(recipeId);
+      const likedBy = record.get('likedBy') as string[] || [];
+      return likedBy.includes(userId);
+    } catch (error) {
+      console.error('Erreur get like status:', error);
+      return false;
+    }
+  },
+
+  async getRecipeLikesCount(recipeId: string): Promise<number> {
+    try {
+      const record = await tables.recipes.find(recipeId);
+      const likesCount = record.get('likes') as number || 0;
+      return likesCount;
+    } catch (error) {
+      console.error('Erreur get likes count:', error);
+      return 0;
+    }
+  },
 }; 

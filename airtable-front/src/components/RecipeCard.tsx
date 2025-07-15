@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
 import { XMarkIcon, HeartIcon, ClockIcon, UserGroupIcon, FireIcon, EyeIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
@@ -61,10 +61,95 @@ export function RecipeCard({ recipe, onAnalyze, open, onOpenDetails, onCloseDeta
   const isOpen = open !== undefined ? open : internalOpen;
   const { user } = useAuth();
   
+  // États pour les likes
+  const [likesCount, setLikesCount] = useState(recipe.likes || 0);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isLikingLoading, setIsLikingLoading] = useState(false);
+  
   // Extraire les noms d'ingrédients pour la vérification d'allergies
   const ingredientNames = recipe.ingredients.map(ing => ing.name || ing.toString());
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Charger le statut de like et le nombre de likes au montage
+  useEffect(() => {
+    const loadLikeData = async () => {
+      if (user?.id) {
+        try {
+          // Récupérer le statut de like
+          const likeStatusResponse = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/recipes/${recipe.id}/like-status`,
+            {
+              headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+              }
+            }
+          );
+          
+          if (likeStatusResponse.ok) {
+            const { liked } = await likeStatusResponse.json();
+            setIsLiked(liked);
+          }
+        } catch (error) {
+          console.error('Erreur lors du chargement du statut de like:', error);
+        }
+      }
+
+      // Récupérer le nombre de likes
+      try {
+        const likesCountResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/recipes/${recipe.id}/likes-count`
+        );
+        
+        if (likesCountResponse.ok) {
+          const { likesCount } = await likesCountResponse.json();
+          setLikesCount(likesCount);
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement du nombre de likes:', error);
+      }
+    };
+
+    loadLikeData();
+  }, [recipe.id, user?.id]);
+
+  // Fonction pour gérer le toggle du like
+  const handleLikeToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (!user?.id) {
+      // Rediriger vers la connexion ou afficher un message
+      alert('Vous devez être connecté pour liker une recette');
+      return;
+    }
+
+    setIsLikingLoading(true);
+    
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/recipes/${recipe.id}/like`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.ok) {
+        const { liked, likesCount: newLikesCount } = await response.json();
+        setIsLiked(liked);
+        setLikesCount(newLikesCount);
+      } else {
+        console.error('Erreur lors du toggle du like');
+      }
+    } catch (error) {
+      console.error('Erreur lors du toggle du like:', error);
+    } finally {
+      setIsLikingLoading(false);
+    }
+  };
 
   const nextImage = () => {
     setCurrentImageIndex((prev) => (prev + 1) % PLACEHOLDER_IMAGES.length);
@@ -97,9 +182,17 @@ export function RecipeCard({ recipe, onAnalyze, open, onOpenDetails, onCloseDeta
             alt={recipe.name}
             className="w-full h-48 object-cover"
           />
-          <div className="absolute top-2 right-2 bg-white/90 rounded-full p-1">
-            <HeartIcon className="h-6 w-6 text-red-500" />
-          </div>
+          <button
+            onClick={handleLikeToggle}
+            disabled={isLikingLoading}
+            className="absolute top-2 right-2 bg-white/90 rounded-full p-1 hover:bg-white transition-colors disabled:opacity-50"
+          >
+            {isLiked ? (
+              <HeartIconSolid className="h-6 w-6 text-red-500" />
+            ) : (
+              <HeartIcon className="h-6 w-6 text-red-500" />
+            )}
+          </button>
         </div>
         <div className="p-4">
           <div className="flex items-center justify-between mb-2">
@@ -123,6 +216,15 @@ export function RecipeCard({ recipe, onAnalyze, open, onOpenDetails, onCloseDeta
               <span>{recipe.servings} pers.</span>
             </div>
           </div>
+          
+          {/* Affichage du nombre de likes */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center space-x-2">
+              <HeartIcon className="h-4 w-4 text-red-500" />
+              <span className="text-sm text-gray-600">{likesCount} like{likesCount > 1 ? 's' : ''}</span>
+            </div>
+          </div>
+          
           {onAnalyze && (
             <button
               onClick={(e) => { e.stopPropagation(); onAnalyze?.(recipe); }}
@@ -135,6 +237,7 @@ export function RecipeCard({ recipe, onAnalyze, open, onOpenDetails, onCloseDeta
       </div>
 
       <Dialog open={isOpen} onClose={handleClose} className="relative z-50">
+        {/* ...existing modal code... */}
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
 
         <div className="fixed inset-0 overflow-hidden">
@@ -156,17 +259,7 @@ export function RecipeCard({ recipe, onAnalyze, open, onOpenDetails, onCloseDeta
                       <XMarkIcon className="h-6 w-6" aria-hidden="true" />
                     </button>
                   </div>
-                  {/* Bouton Analyse nutritionnelle en haut */}
-                  {onAnalyze && false && (
-                    <div className="px-6 pt-4">
-                      <button
-                        onClick={() => { onAnalyze?.(recipe); window.location.hash = `details?recipeId=${recipe.id}`; }}
-                        className="w-full rounded-md bg-black px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 transition-colors"
-                      >
-                        Analyse nutritionnelle
-                      </button>
-                    </div>
-                  )}
+                  
                   {/* Content */}
                   <div className="relative flex-1 px-6 sm:px-8 pb-8">
                     {/* Image Carousel */}
@@ -194,7 +287,7 @@ export function RecipeCard({ recipe, onAnalyze, open, onOpenDetails, onCloseDeta
                       </button>
                     </div>
 
-                    {/* Recipe Info */}
+                    {/* Recipe Info avec likes */}
                     <div className="grid grid-cols-3 gap-4 mb-6 bg-gray-50 p-4 rounded-xl">
                       <div className="flex items-center space-x-2">
                         <ClockIcon className="h-5 w-5 text-indigo-500" />
@@ -209,12 +302,24 @@ export function RecipeCard({ recipe, onAnalyze, open, onOpenDetails, onCloseDeta
                         </span>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <HeartIcon className="h-5 w-5 text-indigo-500" />
-                        <span className="text-sm text-gray-600">
-                          {recipe.likes} likes
-                        </span>
+                        <button
+                          onClick={handleLikeToggle}
+                          disabled={isLikingLoading}
+                          className="flex items-center space-x-2 hover:bg-gray-100 rounded-md p-1 transition-colors disabled:opacity-50"
+                        >
+                          {isLiked ? (
+                            <HeartIconSolid className="h-5 w-5 text-red-500" />
+                          ) : (
+                            <HeartIcon className="h-5 w-5 text-red-500" />
+                          )}
+                          <span className="text-sm text-gray-600">
+                            {likesCount} like{likesCount > 1 ? 's' : ''}
+                          </span>
+                        </button>
                       </div>
                     </div>
+                    
+                    {/* ...rest of existing modal content... */}
                     {/* Alerte d'allergies */}
                     {user && user.allergies && user.allergies.length > 0 && (
                       <div className="mb-6">
@@ -293,4 +398,4 @@ export function RecipeCard({ recipe, onAnalyze, open, onOpenDetails, onCloseDeta
       </Dialog>
     </>
   );
-} 
+}
